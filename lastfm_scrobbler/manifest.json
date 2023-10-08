@@ -1,0 +1,9 @@
+{
+  "domain": "lastfm_scrobbler",
+  "name": "LastFM Scrobbler",
+  "documentation": "",
+  "dependencies": [],
+  "version": "1.0.0",
+  "codeowners": [],
+  "requirements": ["requests", "pylast"]
+}

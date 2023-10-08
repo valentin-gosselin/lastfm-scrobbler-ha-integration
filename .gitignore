@@ -1,0 +1,10 @@
+.vscode/
+__pycache__/
+*.py[cod]
+*.swp
+*.DS_Store
+*.egg-info/
+*.egg
+*.pyc
+*.pyo
+*.swp
