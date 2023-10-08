@@ -1,9 +1,9 @@
 {
   "domain": "lastfm_scrobbler",
   "name": "LastFM Scrobbler",
-  "documentation": "",
+  "documentation": "https://github.com/valentin-gosselin/lastfm-scrobbler-ha-integration/blob/main/README.md",
   "dependencies": [],
   "version": "1.0.0",
-  "codeowners": [],
+  "codeowners": ["@valentin-gosselin"],
   "requirements": ["requests", "pylast"]
 }
