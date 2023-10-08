@@ -19,8 +19,6 @@ The LastFM Scrobbler integration allows tracks played on selected media players 
 
 ## Installation
 
-## Installation
-
 ### Via HACS with Custom Repository (Recommended)
 
 1. Ensure you have [HACS](https://hacs.xyz/docs/installation/installation) installed in your Home Assistant instance.
