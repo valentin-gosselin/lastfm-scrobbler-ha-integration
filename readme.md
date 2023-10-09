@@ -46,6 +46,7 @@ The LastFM Scrobbler integration allows tracks played on selected media players 
      SESSION_KEY: !secret SESSION_KEY
      media_players:
        - media_player.nest
+     scrobble_percentage: 25 # The default value is 1 if this line is omitted.
    ```
 
 2. Update your `secrets.yaml` file with your Last.fm API credentials:
@@ -62,23 +63,7 @@ The LastFM Scrobbler integration allows tracks played on selected media players 
 
 ### Python Installation
 
-#### On Windows:
-
-1. Download the Python installer from the [official Python website](https://www.python.org/downloads/windows/).
-2. Launch the installer. Make sure to check the box "Add python.exe to PATH" before clicking on "Install Now".
-3. Once the installation is complete, open a command prompt and type `python --version` to verify that Python has been installed correctly.
-
-#### On Linux:
-
-1. Open a terminal.
-2. Type the following command to install Python 3:
-   ```bash
-   sudo apt-get install python3
-   ```
-3. To verify that Python has been installed correctly, type the following command:
-   ```bash
-   python3 --version
-   ```
+Install Python from the [official Python website](https://www.python.org/downloads/). Ensure you have Python 3.x installed on your machine.
 
 ### Obtaining Session Key Script
 
@@ -119,6 +104,17 @@ The LastFM Scrobbler integration allows tracks played on selected media players 
 
 Once the integration is set up, simply play music on any of the whitelisted media players in Home Assistant. Tracks will be automatically scrobbled to your Last.fm account.
 
+To verify that scrobbling is working, check the Home Assistant logs for messages from the LastFM Scrobbler integration, or check your Last.fm profile to see if the tracks are being scrobbled.
+
 ## Troubleshooting
 
 If scrobbling isn't working as expected, check the Home Assistant logs for any errors related to the LastFM Scrobbler integration. Filter the logs using keywords such as "scrobble" to quickly identify relevant entries.
+
+You can also set the log level to `debug` for this integration in your `configuration.yaml` to get more detailed log messages:
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.lastfm_scrobbler: debug
+```
