@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2023-10-15
+
+### Fixed
+
+- Error handling in `calculate_current_position` method to manage different data types and values for `last_updated_at`.
+- Enhanced logging to provide more insightful information for debugging.
+
 ## [1.1.0] - 2023-10-09
 
 ### Added

@@ -60,15 +60,27 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         """Calculate the current media position."""
         last_updated_at = player.attributes.get('media_position_updated_at')
         _LOGGER.debug(f'Last updated at: {last_updated_at}')
-        if last_updated_at:
+        if isinstance(last_updated_at, datetime):
             try:
                 elapsed_time = datetime.now(
                     last_updated_at.tzinfo) - last_updated_at
                 return player.attributes.get('media_position', 0) + elapsed_time.total_seconds()
             except Exception as e:
-                _LOGGER.error(f'Error parsing date: {e}')
+                _LOGGER.error(f'Error calculating elapsed time: {e}')
                 return player.attributes.get('media_position', 0)
-        return player.attributes.get('media_position', 0)
+        elif isinstance(last_updated_at, (int, float)):  # assuming it's a timestamp
+            try:
+                last_updated_at_datetime = datetime.utcfromtimestamp(
+                    last_updated_at)
+                elapsed_time = datetime.utcnow() - last_updated_at_datetime
+                return player.attributes.get('media_position', 0) + elapsed_time.total_seconds()
+            except Exception as e:
+                _LOGGER.error(f'Error converting timestamp to datetime: {e}')
+                return player.attributes.get('media_position', 0)
+        else:
+            _LOGGER.error(
+                f'Unexpected type for last_updated_at: {type(last_updated_at)}')
+            return player.attributes.get('media_position', 0)
 
     def update(self):
         """Update the media player entity state."""
@@ -80,21 +92,23 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 self._album = player.attributes.get('media_album_name')
                 media_duration = player.attributes.get('media_duration')
                 media_position = self.calculate_current_position(
-                    player)
+                    player)  # Utilisez la méthode calculée
 
-                # Verification added to ensure media_duration and media_position are valid
+                # Vérification ajoutée pour s'assurer que media_duration et media_position sont valides
                 if media_duration and isinstance(media_duration, (int, float)) and \
                         media_position is not None and isinstance(media_position, (int, float)):
                     # Calculate the percentage of the song that has been played
                     playback_percentage = (
                         media_position / media_duration) * 100
 
+                    # Log the details of the current player and track position/duration
                     _LOGGER.debug(
                         f"Checking player {player_entity_id} at {media_position}/{media_duration} ({playback_percentage}%)")
 
                     if playback_percentage >= self._scrobble_percentage:
+                        # If at least 5% of the song has been played, scrobble it
                         if self._last_scrobbled_track != (self._artist, self._current_track, self._album):
-                            # If at least scrobble_percentage of the song has been played, scrobble it
+                            # If the track has changed since the last scrobble, scrobble it
                             self.scrobble(
                                 self._artist, self._current_track, self._album)
 
