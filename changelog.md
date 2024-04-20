@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2024-04-19
+
+### Fixed
+
+- Fixed a bug that would cause the configured `scrobble_percentage` to be ignored.
+
+### Added
+
+- Support for updating the currently playing track on Last.fm.
+- Updated `__init__.py` to add configuration for the new now playing functionality.
+
 ## [1.1.1] - 2023-10-15
 
 ### Fixed
