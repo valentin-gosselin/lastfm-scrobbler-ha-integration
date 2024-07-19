@@ -17,25 +17,46 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     session_key = hass.data[DOMAIN]['SESSION_KEY']
     media_players = hass.data[DOMAIN]['media_players']
     scrobble_percentage = hass.data[DOMAIN]['scrobble_percentage']
+    update_now_playing = hass.data[DOMAIN]['update_now_playing']
 
     lastfm_network = pylast.LastFMNetwork(
         api_key=api_key, api_secret=api_secret, session_key=session_key)
 
     add_entities([LastFMScrobblerMediaPlayer(
-        lastfm_network, media_players, scrobble_percentage)])
+        lastfm_network, media_players, scrobble_percentage, update_now_playing)])
 
 
 class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
-    def __init__(self, lastfm_network, media_players, scrobble_percentage):
+    def __init__(self, lastfm_network, media_players, scrobble_percentage, update_now_playing):
         """Initialize the media player entity."""
         self._state = None
         self._current_track = None
         self._artist = None
         self._album = None
+        self._now_playing = None
         self._last_scrobbled_track = None
         self._lastfm_network = lastfm_network
         self._media_players = media_players
+        self._update_now_playing = update_now_playing
         self._scrobble_percentage = scrobble_percentage
+
+    def update_now_playing(self, artist, title, album):
+        """Update the current playing song."""
+        if self._now_playing == (artist, title, album):
+            return False
+        self._now_playing = (artist, title, album)
+        try:
+            self._lastfm_network.update_now_playing(
+                artist=artist,
+                title=title,
+                album=album,
+            )
+        except pylast.WSError as ex:
+            _LOGGER.error(f'Failed to update now playing to {title} by {artist}: {ex}')
+            return False
+
+        return True
+
 
     def scrobble(self, artist, title, album):
         """Scrobble the current playing track to Last.fm."""
@@ -85,6 +106,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
     def update(self):
         """Update the media player entity state."""
         for player_entity_id in self._media_players:
+            updated_now_playing = False
             player = self.hass.states.get(player_entity_id)
             if player is not None and player.state == STATE_PLAYING:
                 self._artist = player.attributes.get('media_artist')
@@ -93,6 +115,12 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 media_duration = player.attributes.get('media_duration')
                 media_position = self.calculate_current_position(
                     player)  # Utilisez la méthode calculée
+
+                # update the current playing track. We only do this once per
+                # update cycle so media players higher in the list take precendence
+                # over entities lower in the list.
+                if self._update_now_playing and not updated_now_playing:
+                    updated_now_playing = self.update_now_playing(self._artist, self._current_track, self._album) 
 
                 # Vérification ajoutée pour s'assurer que media_duration et media_position sont valides
                 if media_duration and isinstance(media_duration, (int, float)) and \
@@ -105,8 +133,8 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                     _LOGGER.debug(
                         f"Checking player {player_entity_id} at {media_position}/{media_duration} ({playback_percentage}%)")
 
-                    if playback_percentage >= self._scrobble_percentage:
-                        # If at least 5% of the song has been played, scrobble it
+                    if playback_percentage >= self._scrobble_percentage or media_position >= 240:
+                        # last.fm says to scrobble at 50% or after 4 minutes, whichever is sooner
                         if self._last_scrobbled_track != (self._artist, self._current_track, self._album):
                             # If the track has changed since the last scrobble, scrobble it
                             self.scrobble(
