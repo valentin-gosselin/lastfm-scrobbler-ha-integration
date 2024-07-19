@@ -47,6 +47,7 @@ The LastFM Scrobbler integration allows tracks played on selected media players 
      media_players:
        - media_player.nest
      scrobble_percentage: 25 # The default value is 1 if this line is omitted.
+     update_now_playing: True # the default value is False is this line is omitted.
    ```
 
 2. Update your `secrets.yaml` file with your Last.fm API credentials:
@@ -105,6 +106,8 @@ Install Python from the [official Python website](https://www.python.org/downloa
 Once the integration is set up, simply play music on any of the whitelisted media players in Home Assistant. Tracks will be automatically scrobbled to your Last.fm account.
 
 To verify that scrobbling is working, check the Home Assistant logs for messages from the LastFM Scrobbler integration, or check your Last.fm profile to see if the tracks are being scrobbled.
+
+If multiple media players are playing a song, Last.fm will only be updated once; using the first success media player (in the order of the `media_players` configuration).
 
 ## Troubleshooting
 
