@@ -109,10 +109,49 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             updated_now_playing = False
             player = self.hass.states.get(player_entity_id)
             if player is not None and player.state == STATE_PLAYING:
-                self._artist = player.attributes.get('media_artist')
-                self._current_track = player.attributes.get('media_title')
-                self._album = player.attributes.get('media_album_name')
-                media_duration = player.attributes.get('media_duration')
+                self._artist = player.attributes.get("media_artist")
+                self._current_track = player.attributes.get("media_title")
+                if not self._artist or not self._current_track:
+                    # no scrobbling without artist and track info -
+                    # go straight to the next player instead of doing more, ultimately useless work
+                    _LOGGER.info(
+                        "%s is playing but missing artist/track info. Unable to scrobble",
+                        player.entity_id,
+                    )
+                    continue
+
+                if (
+                    self._artist
+                    and player.attributes.get("mass_player_type")
+                    and " / " in self._artist
+                ):
+                    # Music Assistant lists multiple artists from spotify (and maybe other sources)
+                    # separated by slashes ("/"). That's unusual and will mess up scrobbles.
+                    # It seems what would be considered the main artist is usually the first one
+                    # mentioned, so we'll take that one. Music Assistant based media_players
+                    # can be identified by the "mass_player_type" attribute.
+                    _LOGGER.debug(
+                        "Remove slashed multi-artists from MASS artist data (%s)",
+                        self._artist,
+                    )
+                    self._artist = self._artist.split(" / ")[0]
+                    _LOGGER.debug("Resulting artist: %s", self._artist)
+
+                if (
+                    player.attributes.get("mass_player_type")
+                    and player.attributes.get("media_content_id")
+                    and "radio" in player.attributes.get("media_content_id")
+                ):
+                    # When playing radio through Music Assistant, the name of the radio station
+                    # is added as album
+                    _LOGGER.warning(
+                        "Won't use album info from MASS radio playback - "
+                        "it displays the name of the radio station"
+                    )
+                    self._album = ""
+                else:
+                    self._album = player.attributes.get("media_album_name")
+                media_duration = player.attributes.get("media_duration")
                 media_position = self.calculate_current_position(
                     player)  # Utilisez la méthode calculée
 
