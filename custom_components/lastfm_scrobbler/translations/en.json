@@ -1,0 +1,41 @@
+{
+  "config": {
+    "title": "lastfm_scrobbler",
+    "error": {},
+    "step": {
+      "user": {
+        "title": "Setup lastfm_scrobbler",
+        "data": {
+          "name": "Name of the newly created lastfm_scrobbler entity",
+          "api_key": "last.fm API key",
+          "api_secret": "last.fm API secret",
+          "session_key": "last.fm Session key",
+          "scrobble_percentage": "Scrobble after playback of this percentage of track length.",
+          "update_now_playing": "Check to also update the \"now playing\" info on last.fm",
+          "entity_id": "Select media players to scrobble from (ordered by priority)",
+          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)"
+        },
+        "description": "Enter credentials according to the README and configure the behaviour of this scrobbler."
+      }
+    }
+  },
+  "options": {
+    "title": "lastfm_scrobbler",
+    "error": {},
+    "step": {
+      "init": {
+        "title": "Edit a lastfm_scrobbler",
+        "data": {
+          "api_key": "last.fm API key",
+          "api_secret": "last.fm API secret",
+          "session_key": "last.fm Session key",
+          "scrobble_percentage": "Scrobble after playback of this percentage of track length.",
+          "update_now_playing": "Check to also update the \"now playing\" info on last.fm",
+          "entity_id": "Select media players to scrobble from (ordered by priority)",
+          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)"
+        },
+        "description": "Update credentials according to README or change the behaviour of this scrobbler."
+      }
+    }
+  }
+}
