@@ -1,4 +1,4 @@
-"""Constants for the hass-scrobbler integration."""
+"""Constants for the lastfm_scrobbler integration."""
 
 DOMAIN = "lastfm_scrobbler"
 CONF_SCROBBLE_PERCENTAGE = "scrobble_percentage"

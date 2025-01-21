@@ -28,8 +28,6 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-_LOGGER.info("Something happening with config_flow.py")
-
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME, default="My Scrobbler"): str,
