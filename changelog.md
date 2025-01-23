@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2025-01-23
+
+### Added
+- **ConfigFlow and OptionsFlow**: Configuration is now fully managed through the Home Assistant UI, removing the need for `configuration.yaml`.
+- **Support for multiple Last.fm accounts**: Create separate configurations for different scrobblers with unique media sources and destination accounts.
+- **Entity-based conditions (`check_entities`)**: Scrobbling can now be restricted to specific conditions (e.g., only when you're home or a switch is on).
+- **Improved Metadata Handling**: Fixes for `Music Assistant` media players, including handling of multi-artist tracks (split by `/`) and radio playback metadata.
+  
+### Changed
+- Removed YAML-based configuration. All configurations must now be set up via the Home Assistant UI.
+- Updated documentation to reflect the transition to ConfigFlow and the new features.
+
+### Fixed
+- Improved handling of incomplete metadata from media players (e.g., missing artist or track).
+- Fixed issues with media players sending incorrect album data when playing radio stations.
+
 ## [1.2.0] - 2024-04-19
 
 ### Fixed
