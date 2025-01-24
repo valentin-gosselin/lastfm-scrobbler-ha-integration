@@ -123,7 +123,11 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 if (
                     self._artist
                     and player.attributes.get("mass_player_type")
-                    and " / " in self._artist
+                    and "/" in self._artist
+                    and self._artist.lower()
+                    not in [
+                        "ac/dc",
+                    ]
                 ):
                     # Music Assistant lists multiple artists from spotify (and maybe other sources)
                     # separated by slashes ("/"). That's unusual and will mess up scrobbles.
@@ -134,7 +138,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                         "Remove slashed multi-artists from MASS artist data (%s)",
                         self._artist,
                     )
-                    self._artist = self._artist.split(" / ")[0]
+                    self._artist = self._artist.split("/")[0]
                     _LOGGER.debug("Resulting artist: %s", self._artist)
 
                 if (
