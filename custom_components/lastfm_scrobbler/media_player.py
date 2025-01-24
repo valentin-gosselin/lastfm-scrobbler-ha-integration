@@ -148,7 +148,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                         "Won't use album info from MASS radio playback - "
                         "it displays the name of the radio station"
                     )
-                    self._album = ""
+                    self._album = None
                 else:
                     self._album = player.attributes.get("media_album_name")
                 media_duration = player.attributes.get("media_duration")
