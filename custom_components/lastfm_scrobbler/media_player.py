@@ -216,6 +216,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             _LOGGER.debug("%s is NOT updating: a check_entity is off", self.name)
             return False
         _LOGGER.debug("Entity checks passed - %s now updating", self.name)
+        reason_to_break = False
         for player_entity_id in self._media_players:
             updated_now_playing = False
             player = self.hass.states.get(player_entity_id)
@@ -230,6 +231,15 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                         player.entity_id,
                     )
                     continue
+
+                # at this point, we know the current player is playing has scrobble-able info.
+                # as we encounter this going through a list whose order is representing a priority,
+                # we must not continue with any other player after processing this one.
+                _LOGGER.debug(
+                    "Found the highest priority active player: %s - break the loop after processing it",
+                    player.entity_id,
+                )
+                reason_to_break = True
 
                 if (
                     self._artist
@@ -307,13 +317,12 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                             self._album,
                         ):
                             # If the track has changed since the last scrobble, scrobble it
-                            if self.scrobble():
-                                # breaking the loop after scrobbling ensures players having
-                                # priority over each other. Continuing the loop could cause
-                                # different tracks being scrobbled at the same time, and possibly
-                                # multiple times over and over due to constant overwriting of
-                                # self._last_scrobbled_track
-                                break
+                            self.scrobble()
+
+            if reason_to_break:
+                _LOGGER.debug("Breaking the loop!")
+                break
+
         return True
 
     @property
