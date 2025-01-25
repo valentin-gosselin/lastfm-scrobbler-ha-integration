@@ -77,6 +77,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         self._current_track = None
         self._artist = None
         self._album = None
+        self._duration = None
         self._now_playing = None
         self._last_scrobbled_track = None
         self._lastfm_network = lastfm_network
@@ -112,29 +113,41 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         _LOGGER.debug("All entity checks passed - we can scrobble!")
         return True
 
-    def update_now_playing(self, artist, title, album):
+    def update_now_playing(self):
         """Update the current playing song."""
-        if self._now_playing == (artist, title, album):
+        if self._now_playing == (self._artist, self._current_track, self._album):
             return False
-        self._now_playing = (artist, title, album)
+        self._now_playing = (self._artist, self._current_track, self._album)
         try:
             self._lastfm_network.update_now_playing(
-                artist=artist,
-                title=title,
-                album=album,
+                artist=self._artist,
+                title=self._current_track,
+                album=self._album,
+                duration=self._duration,
             )
         except pylast.WSError as ex:
             _LOGGER.error(
-                "Failed to update now playing to %s by %s: %s", title, artist, ex
+                "Failed to update now playing to %s by %s: %s",
+                self._current_track,
+                self._artist,
+                ex,
             )
             return False
 
         return True
 
-    def scrobble(self, artist, title, album):
+    def scrobble(self):
         """Scrobble the current playing track to Last.fm."""
-        if self._last_scrobbled_track == (artist, title, album):
-            _LOGGER.info("Already scrobbled %s by %s, skipping", title, artist)
+        if self._last_scrobbled_track == (
+            self._artist,
+            self._current_track,
+            self._album,
+        ):
+            _LOGGER.info(
+                "Already scrobbled %s by %s, skipping",
+                self._current_track,
+                self._artist,
+            )
             return None
 
         # Obtain the current UNIX timestamp for the scrobble
@@ -143,14 +156,26 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         try:
             # Attempt to scrobble the track to Last.fm
             self._lastfm_network.scrobble(
-                artist=artist, title=title, album=album, timestamp=timestamp
+                artist=self._artist,
+                title=self._current_track,
+                album=self._album,
+                duration=self._duration,
+                timestamp=timestamp,
             )
         except pylast.WSError as ex:
             # Log any error encountered during the scrobble attempt
-            _LOGGER.error("Failed to scrobble %s by %s: %s", title, artist, ex)
+            _LOGGER.error(
+                "Failed to scrobble %s by %s: %s", self._current_track, self._artist, ex
+            )
         else:
-            _LOGGER.info("Successfully scrobbled %s by %s", title, artist)
-            self._last_scrobbled_track = (artist, title, album)
+            _LOGGER.info(
+                "Successfully scrobbled %s by %s", self._current_track, self._artist
+            )
+            self._last_scrobbled_track = (
+                self._artist,
+                self._current_track,
+                self._album,
+            )
             return True
         return False
 
@@ -239,15 +264,19 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                     and "radio" in player.attributes.get("media_content_id")
                 ):
                     # When playing radio through Music Assistant, the name of the radio station
-                    # is added as album
-                    _LOGGER.warning(
-                        "Won't use album info from MASS radio playback - "
-                        "it displays the name of the radio station"
+                    # is added as album and the track duration is unreliable (very long)
+                    _LOGGER.debug(
+                        "Won't use album info and track duration from MASS radio playback"
                     )
-                    self._album = ""
+                    self._album = None
+                    self._duration = None
                 else:
                     self._album = player.attributes.get("media_album_name")
-                media_duration = player.attributes.get("media_duration")
+                    try:
+                        self._duration = int(player.attributes.get("media_duration"))
+                    except TypeError:
+                        self._duration = None
+
                 media_position = self.calculate_current_position(
                     player
                 )  # Utilisez la méthode calculée
@@ -256,26 +285,24 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 # update cycle so media players higher in the list take precendence
                 # over entities lower in the list.
                 if self._update_now_playing and not updated_now_playing:
-                    updated_now_playing = self.update_now_playing(
-                        self._artist, self._current_track, self._album
-                    )
+                    updated_now_playing = self.update_now_playing()
 
                 # Vérification ajoutée pour s'assurer que media_duration et media_position sont valides
                 if (
-                    media_duration
-                    and isinstance(media_duration, (int, float))
+                    self._duration
+                    and isinstance(self._duration, (int, float))
                     and media_position is not None
                     and isinstance(media_position, (int, float))
                 ):
                     # Calculate the percentage of the song that has been played
-                    playback_percentage = (media_position / media_duration) * 100
+                    playback_percentage = (media_position / self._duration) * 100
 
                     # Log the details of the current player and track position/duration
                     _LOGGER.debug(
                         "Checking player %s at %s/%s (%s%%)",
                         player_entity_id,
                         media_position,
-                        media_duration,
+                        self._duration,
                         playback_percentage,
                     )
 
