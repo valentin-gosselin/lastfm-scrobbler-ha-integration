@@ -1,18 +1,48 @@
-DOMAIN = 'lastfm_scrobbler'
+"""The scrobbler integration."""
+
+import asyncio
+import logging
+
+from homeassistant import config_entries, core
+from homeassistant.const import Platform
+
+from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
+
+PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
 
 
-def setup(hass, config):
-    """Set up the LastFM Scrobbler component."""
-    hass.data[DOMAIN] = {
-        'API_KEY': config[DOMAIN]['API_KEY'],
-        'API_SECRET': config[DOMAIN]['API_SECRET'],
-        'SESSION_KEY': config[DOMAIN]['SESSION_KEY'],
-        'media_players': config[DOMAIN]['media_players'],
-        # 1 is the default value
-        'scrobble_percentage': config[DOMAIN].get('scrobble_percentage', 1),
-        'update_now_playing': config[DOMAIN].get('update_now_playing', False)
-    }
+async def async_setup_entry(
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+) -> bool:
+    """Set up platform from a ConfigEntry."""
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = entry.data
+    hass_data = dict(entry.data)
+    hass.data[DOMAIN][entry.entry_id] = hass_data
+    entry.async_on_unload(entry.add_update_listener(options_update_listener))
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Forward the setup to the media_player platform
-    hass.helpers.discovery.load_platform('media_player', DOMAIN, {}, config)
     return True
+
+
+async def options_update_listener(
+    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+):
+    """Handle options update."""
+    _LOGGER.debug("Handle options update")
+    await hass.config_entries.async_reload(config_entry.entry_id)
+
+
+async def async_unload_entry(
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+) -> bool:
+    """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    # Remove config entry from domain.
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id)
+
+    return unload_ok

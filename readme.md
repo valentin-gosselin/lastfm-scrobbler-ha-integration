@@ -17,49 +17,6 @@ The LastFM Scrobbler integration allows tracks played on selected media players 
 - A valid Last.fm account is required. Create one [here](https://www.last.fm/join) if you don't have one.
 - Obtain your API Key and API Secret by creating a new API application on Last.fm [here](https://www.last.fm/api/account/create).
 
-## Installation
-
-### Via HACS with Custom Repository (Recommended)
-
-1. Ensure you have [HACS](https://hacs.xyz/docs/installation/installation) installed in your Home Assistant instance.
-2. Go to HACS -> Integrations -> ... (three dots in the top right corner) -> Custom repositories.
-3. Add the repository URL: `https://github.com/valentin-gosselin/lastfm-scrobbler-ha-integration`, with the category: Integration.
-4. Click on "Add".
-5. Now you should see the LastFM Scrobbler Integration available in HACS under "Integrations".
-6. Click on it and then click on "Install".
-7. Restart Home Assistant to load the new integration.
-
-### Manual Installation
-
-1. Clone or download this GitHub repository.
-2. Copy the `lastfm_scrobbler` directory from the repository to your `config/custom_components` directory in your Home Assistant configuration directory.
-3. Restart Home Assistant to load the new integration.
-
-## Configuration
-
-1. Update your `configuration.yaml` file with the following entries:
-
-   ```yaml
-   lastfm_scrobbler:
-     API_KEY: !secret API_KEY
-     API_SECRET: !secret API_SECRET
-     SESSION_KEY: !secret SESSION_KEY
-     media_players:
-       - media_player.nest
-     scrobble_percentage: 25 # The default value is 1 if this line is omitted.
-     update_now_playing: True # the default value is False is this line is omitted.
-   ```
-
-2. Update your `secrets.yaml` file with your Last.fm API credentials:
-
-   ```yaml
-   API_KEY: "your_lastfm_api_key"
-   API_SECRET: "your_lastfm_api_secret"
-   SESSION_KEY: "your_lastfm_session_key"
-   ```
-
-3. Restart Home Assistant to apply the new configuration.
-
 ## Obtaining the Session Key
 
 ### Python Installation
@@ -101,13 +58,66 @@ Install Python from the [official Python website](https://www.python.org/downloa
 
 4. Follow the prompts to enter your Last.fm username and password. The script will display your session key.
 
+## Installation
+
+### Via HACS with Custom Repository (Recommended)
+
+1. Ensure you have [HACS](https://hacs.xyz/docs/installation/installation) installed in your Home Assistant instance.
+2. Go to HACS -> Integrations -> ... (three dots in the top right corner) -> Custom repositories.
+3. Add the repository URL: `https://github.com/valentin-gosselin/lastfm-scrobbler-ha-integration`, with the category: Integration.
+4. Click on "Add".
+5. Now you should see the LastFM Scrobbler Integration available in HACS under "Integrations".
+6. Click on it and then click on "Install".
+7. Restart Home Assistant to load the new integration.
+
+### Manual Installation
+
+1. Clone or download this GitHub repository.
+2. Copy the `lastfm_scrobbler` directory from the repository to your `config/custom_components` directory in your Home Assistant configuration directory.
+3. Restart Home Assistant to load the new integration.
+
+## Configuration
+
+
+
+### Migration from YAML (Important!)
+As of version **1.3.0**, configuration via `configuration.yaml` is no longer supported. You must delete any `lastfm_scrobbler` entries in your `configuration.yaml` file and migrate to the GUI-based ConfigFlow.
+
+1. Remove the old YAML configuration:
+   ```yaml
+   # Remove this from your configuration.yaml
+   lastfm_scrobbler:
+     API_KEY: !secret API_KEY
+     API_SECRET: !secret API_SECRET
+     SESSION_KEY: !secret SESSION_KEY
+
+2. Restart Home Assistant to apply the removal.
+
+### New Configuration via GUI
+
+1. Go to **Settings** -> **Devices & Services** in Home Assistant.
+2. Click **Add Integration** and search for **LastFM Scrobbler**.
+3. Follow the on-screen prompts to:
+   - Provide your Last.fm API credentials (API Key, API Secret, and Session Key).
+   - Configure your scrobbler's behavior, including the percentage of the track to scrobble, and whether to update "Now Playing".
+   - Select one or more media players to scrobble from.
+   - Optionally, set up entity conditions (`check_entities`) to control when scrobbling is allowed (e.g., only when you're home or a specific switch is on).
+
+4. Repeat these steps for each additional Last.fm account or source configuration.
+
+---
+
 ## Usage
 
-Once the integration is set up, simply play music on any of the whitelisted media players in Home Assistant. Tracks will be automatically scrobbled to your Last.fm account.
+Once the integration is set up:
+- Simply play music on any of the configured media players.
+- The integration will scrobble tracks automatically to Last.fm according to the settings you defined in ConfigFlow.
 
-To verify that scrobbling is working, check the Home Assistant logs for messages from the LastFM Scrobbler integration, or check your Last.fm profile to see if the tracks are being scrobbled.
-
-If multiple media players are playing a song, Last.fm will only be updated once; using the first success media player (in the order of the `media_players` configuration).
+### Entity Conditions (`check_entities`)
+- Use `check_entities` to control scrobbling with automation-friendly entities, such as:
+  - **Persons**: Only scrobble when specific people are home (`person.my_name == "home"`).
+  - **Switches**: Activate or deactivate scrobbling via a toggle switch (`switch.scrobble_toggle`).
+  - **Input booleans**: Use automations to turn scrobbling on or off.
 
 ## Troubleshooting
 
