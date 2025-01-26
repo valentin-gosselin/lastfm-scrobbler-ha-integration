@@ -1,0 +1,41 @@
+{
+  "config": {
+    "title": "lastfm_scrobbler",
+    "error": {},
+    "step": {
+      "user": {
+        "title": "Configurer lastfm_scrobbler",
+        "data": {
+          "name": "Nom de la nouvelle entité lastfm_scrobbler créée",
+          "api_key": "Clé API de last.fm",
+          "api_secret": "Secret API de last.fm",
+          "session_key": "Clé de session de last.fm",
+          "scrobble_percentage": "Scrobble après lecture de ce pourcentage de la durée du morceau.",
+          "update_now_playing": "Cochez pour également mettre à jour l'information \"en cours de lecture\" sur last.fm",
+          "entity_id": "Sélectionnez les lecteurs multimédias à scrobbler (classés par priorité)",
+          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)"
+        },
+        "description": "Entrez les informations d'identification conformément au README et configurez le comportement de ce scrobbler."
+      }
+    }
+  },
+  "options": {
+    "title": "lastfm_scrobbler",
+    "error": {},
+    "step": {
+      "init": {
+        "title": "Modifier un lastfm_scrobbler",
+        "data": {
+          "api_key": "Clé API de last.fm",
+          "api_secret": "Secret API de last.fm",
+          "session_key": "Clé de session de last.fm",
+          "scrobble_percentage": "Scrobble après lecture de ce pourcentage de la durée du morceau.",
+          "update_now_playing": "Cochez pour également mettre à jour l'information \"en cours de lecture\" sur last.fm",
+          "entity_id": "Sélectionnez les lecteurs multimédias à scrobbler (classés par priorité)",
+          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)"
+        },
+        "description": "Mettez à jour les informations d'identification conformément au README ou modifiez le comportement de ce scrobbler."
+      }
+    }
+  }
+}

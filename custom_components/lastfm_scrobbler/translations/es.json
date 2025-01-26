@@ -1,0 +1,42 @@
+{
+    "config": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "user": {
+          "title": "Configurar lastfm_scrobbler",
+          "data": {
+            "name": "Nombre de la nueva entidad lastfm_scrobbler creada",
+            "api_key": "Clave API de last.fm",
+            "api_secret": "Secreto API de last.fm",
+            "session_key": "Clave de sesión de last.fm",
+            "scrobble_percentage": "Scrobble después de reproducir este porcentaje de la duración de la pista.",
+            "update_now_playing": "Marque para actualizar también la información de \"reproduciendo ahora\" en last.fm",
+            "entity_id": "Seleccione los reproductores multimedia para hacer scrobble (ordenados por prioridad)",
+            "check_entity": "Opcional: Hacer scrobble solo cuando TODAS las entidades seleccionadas sean \"positivas\" (persona=en casa, interruptor=encendido, etc.)"
+          },
+          "description": "Introduce las credenciales según el README y configura el comportamiento de este scrobbler."
+        }
+      }
+    },
+    "options": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "init": {
+          "title": "Editar un lastfm_scrobbler",
+          "data": {
+            "api_key": "Clave API de last.fm",
+            "api_secret": "Secreto API de last.fm",
+            "session_key": "Clave de sesión de last.fm",
+            "scrobble_percentage": "Scrobble después de reproducir este porcentaje de la duración de la pista.",
+            "update_now_playing": "Marque para actualizar también la información de \"reproduciendo ahora\" en last.fm",
+            "entity_id": "Seleccione los reproductores multimedia para hacer scrobble (ordenados por prioridad)",
+            "check_entity": "Opcional: Hacer scrobble solo cuando TODAS las entidades seleccionadas sean \"positivas\" (persona=en casa, interruptor=encendido, etc.)"
+          },
+          "description": "Actualiza las credenciales según el README o cambia el comportamiento de este scrobbler."
+        }
+      }
+    }
+  }
+  

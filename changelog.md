@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+# Changelog
+
+## [1.3.1] - 2025-01-26
+### Added
+- **Scrobbling duration**: Track duration is now included in the scrobble payload to improve accuracy and better reflect playback history.
+- **Workaround for multi-artist tracks**: Improved handling for multi-artist metadata from Music Assistant (split by `/`). The scrobbling now only takes the first artist in cases where multiple artists are listed, improving compatibility with Last.fm's handling.
+- **Multilingual support**: Added translations for ConfigFlow and OptionsFlow setup:
+  - **French (fr)**
+  - **Spanish (es)**
+  - **German (de)**
+  - **Italian (it)**
+  - **Russian (ru)**
+  - **Simplified Chinese (zh-Hans)**
+
+### Changed
+- **Cleaner metadata passing**: Refactored how artist, track, and album information are passed internally, relying on object attributes instead of explicit function arguments for cleaner and more maintainable code.
+- **Empty album handling**: Replaced empty album strings (`""`) with `None` for better compatibility with the `pylast` library expectations.
+
+### Fixed
+- **Scrobble loop prevention**: Resolved an issue where multiple media players playing different tracks simultaneously could cause scrobbling loops. The loop now breaks only after successfully scrobbling the highest-priority track.
+- **Improved metadata fallback**: Fixed cases where incomplete metadata from media players (e.g., missing artist or track information) caused scrobbling failures.
+- **Radio playback handling**: Addressed cases where radio streams from Music Assistant were incorrectly passing station names as album information and unreliable durations. These are now excluded to avoid scrobbling errors.
+
 ## [1.3.0] - 2025-01-23
 
 ### Added

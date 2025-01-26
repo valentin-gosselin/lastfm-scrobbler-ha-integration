@@ -1,0 +1,42 @@
+{
+    "config": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "user": {
+          "title": "Configura lastfm_scrobbler",
+          "data": {
+            "name": "Nome della nuova entità lastfm_scrobbler",
+            "api_key": "Chiave API di last.fm",
+            "api_secret": "Segreto API di last.fm",
+            "session_key": "Chiave di sessione di last.fm",
+            "scrobble_percentage": "Effettua lo scrobble dopo la riproduzione di questa percentuale della durata del brano.",
+            "update_now_playing": "Seleziona per aggiornare anche le informazioni di \"in riproduzione\" su last.fm",
+            "entity_id": "Seleziona i lettori multimediali da cui effettuare lo scrobble (ordinati per priorità)",
+            "check_entity": "Opzionale: Esegui lo scrobble solo quando TUTTE le entità selezionate sono \"positive\" (persona=a casa, interruttore=acceso, ecc.)"
+          },
+          "description": "Inserisci le credenziali secondo il README e configura il comportamento di questo scrobbler."
+        }
+      }
+    },
+    "options": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "init": {
+          "title": "Modifica un lastfm_scrobbler",
+          "data": {
+            "api_key": "Chiave API di last.fm",
+            "api_secret": "Segreto API di last.fm",
+            "session_key": "Chiave di sessione di last.fm",
+            "scrobble_percentage": "Effettua lo scrobble dopo la riproduzione di questa percentuale della durata del brano.",
+            "update_now_playing": "Seleziona per aggiornare anche le informazioni di \"in riproduzione\" su last.fm",
+            "entity_id": "Seleziona i lettori multimediali da cui effettuare lo scrobble (ordinati per priorità)",
+            "check_entity": "Opzionale: Esegui lo scrobble solo quando TUTTE le entità selezionate sono \"positive\" (persona=a casa, interruttore=acceso, ecc.)"
+          },
+          "description": "Aggiorna le credenziali secondo il README o modifica il comportamento di questo scrobbler."
+        }
+      }
+    }
+  }
+  
