@@ -1,0 +1,42 @@
+{
+    "config": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "user": {
+          "title": "lastfm_scrobbler einrichten",
+          "data": {
+            "name": "Name der neu erstellten lastfm_scrobbler-Entität",
+            "api_key": "last.fm API-Schlüssel",
+            "api_secret": "last.fm API-Geheimnis",
+            "session_key": "last.fm Sitzungs-Schlüssel",
+            "scrobble_percentage": "Scrobble nach Wiedergabe dieses Prozentsatzes der Titel-Dauer.",
+            "update_now_playing": "Aktivieren, um auch die \"Jetzt-wird-gespielt\"-Information auf last.fm zu aktualisieren",
+            "entity_id": "Wählen Sie die Medienplayer aus, von denen gescrobbelt werden soll (nach Priorität geordnet)",
+            "check_entity": "Optional: Nur scrobblen, wenn ALLE ausgewählten Entitäten \"positiv\" sind (Person=zu Hause, Schalter=ein, usw.)"
+          },
+          "description": "Geben Sie die Anmeldeinformationen gemäß der README ein und konfigurieren Sie das Verhalten dieses Scrobblers."
+        }
+      }
+    },
+    "options": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "init": {
+          "title": "Einen lastfm_scrobbler bearbeiten",
+          "data": {
+            "api_key": "last.fm API-Schlüssel",
+            "api_secret": "last.fm API-Geheimnis",
+            "session_key": "last.fm Sitzungs-Schlüssel",
+            "scrobble_percentage": "Scrobble nach Wiedergabe dieses Prozentsatzes der Titel-Dauer.",
+            "update_now_playing": "Aktivieren, um auch die \"Jetzt-wird-gespielt\"-Information auf last.fm zu aktualisieren",
+            "entity_id": "Wählen Sie die Medienplayer aus, von denen gescrobbelt werden soll (nach Priorität geordnet)",
+            "check_entity": "Optional: Nur scrobblen, wenn ALLE ausgewählten Entitäten \"positiv\" sind (Person=zu Hause, Schalter=ein, usw.)"
+          },
+          "description": "Aktualisieren Sie die Anmeldeinformationen gemäß der README oder ändern Sie das Verhalten dieses Scrobblers."
+        }
+      }
+    }
+  }
+  

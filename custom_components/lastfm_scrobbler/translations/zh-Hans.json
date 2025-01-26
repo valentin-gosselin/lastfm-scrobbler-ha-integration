@@ -1,0 +1,42 @@
+{
+    "config": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "user": {
+          "title": "设置 lastfm_scrobbler",
+          "data": {
+            "name": "新创建的 lastfm_scrobbler 实体名称",
+            "api_key": "last.fm API 密钥",
+            "api_secret": "last.fm API 密钥",
+            "session_key": "last.fm 会话密钥",
+            "scrobble_percentage": "在播放达到该曲目长度百分比后进行 scrobble。",
+            "update_now_playing": "勾选以同时更新 last.fm 上的“正在播放”信息",
+            "entity_id": "选择用于 scrobble 的媒体播放器（按优先级排列）",
+            "check_entity": "可选：仅在所有选定实体为“有效”（例如：person=home，switch=on 等）时进行 scrobble"
+          },
+          "description": "根据 README 输入凭据并配置此 scrobbler 的行为。"
+        }
+      }
+    },
+    "options": {
+      "title": "lastfm_scrobbler",
+      "error": {},
+      "step": {
+        "init": {
+          "title": "编辑 lastfm_scrobbler",
+          "data": {
+            "api_key": "last.fm API 密钥",
+            "api_secret": "last.fm API 密钥",
+            "session_key": "last.fm 会话密钥",
+            "scrobble_percentage": "在播放达到该曲目长度百分比后进行 scrobble。",
+            "update_now_playing": "勾选以同时更新 last.fm 上的“正在播放”信息",
+            "entity_id": "选择用于 scrobble 的媒体播放器（按优先级排列）",
+            "check_entity": "可选：仅在所有选定实体为“有效”（例如：person=home，switch=on 等）时进行 scrobble"
+          },
+          "description": "根据 README 更新凭据或更改此 scrobbler 的行为。"
+        }
+      }
+    }
+  }
+  
