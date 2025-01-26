@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - **Scrobble loop prevention**: Resolved an issue where multiple media players playing different tracks simultaneously could cause scrobbling loops. The loop now breaks only after successfully scrobbling the highest-priority track.
 - **Improved metadata fallback**: Fixed cases where incomplete metadata from media players (e.g., missing artist or track information) caused scrobbling failures.
 - **Radio playback handling**: Addressed cases where radio streams from Music Assistant were incorrectly passing station names as album information and unreliable durations. These are now excluded to avoid scrobbling errors.
+- **Config flow robustness**: Added defaults for optional fields to prevent errors when fields are left empty during the setup process.
 
 ## [1.3.0] - 2025-01-23
 
