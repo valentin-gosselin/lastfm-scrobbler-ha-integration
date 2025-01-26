@@ -41,7 +41,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
                 filter=EntityFilterSelectorConfig(domain="media_player"), multiple=True
             )
         ),
-        vol.Optional(CONF_CHECK_ENTITY): EntitySelector(
+        vol.Optional(CONF_CHECK_ENTITY, default=[]): EntitySelector(
             EntitySelectorConfig(
                 filter=EntityFilterSelectorConfig(
                     domain=["person", "input_boolean", "switch"]
@@ -64,6 +64,8 @@ class ScrobblerConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            #Check if all optional fields have defaults values
+            user_input.setdefault(CONF_CHECK_ENTITY, [])
             try:
                 pass
             except Exception:
@@ -98,7 +100,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
         config = self.hass.data[DOMAIN][self.config_entry.entry_id]
 
-        if user_input is not None:
+        if user_input is not None:            
+            #Check if all optional fields have defaults values
+            user_input.setdefault(CONF_CHECK_ENTITY, [])
+            
             try:
                 pass
             except Exception:
@@ -141,7 +146,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     )
                 ),
                 vol.Optional(
-                    CONF_CHECK_ENTITY, default=config[CONF_CHECK_ENTITY]
+                    CONF_CHECK_ENTITY, default=config.get(CONF_CHECK_ENTITY, [])
                 ): EntitySelector(
                     EntitySelectorConfig(
                         filter=EntityFilterSelectorConfig(
