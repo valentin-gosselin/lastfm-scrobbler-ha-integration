@@ -125,7 +125,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 album=self._album,
                 duration=self._duration,
             )
-        except pylast.WSError as ex:
+        except (pylast.WSError, pylast.NetworkError) as ex:
             _LOGGER.error(
                 "Failed to update now playing to %s by %s: %s",
                 self._current_track,
@@ -150,11 +150,17 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             )
             return None
 
-        # Obtain the current UNIX timestamp for the scrobble
         timestamp = int(time.time())
 
+        # Mark as scrobbled BEFORE the API call to prevent duplicates on timeout
+        # Last.fm rejects duplicates with the same timestamp anyway
+        self._last_scrobbled_track = (
+            self._artist,
+            self._current_track,
+            self._album,
+        )
+
         try:
-            # Attempt to scrobble the track to Last.fm
             self._lastfm_network.scrobble(
                 artist=self._artist,
                 title=self._current_track,
@@ -162,22 +168,15 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 duration=self._duration,
                 timestamp=timestamp,
             )
-        except pylast.WSError as ex:
-            # Log any error encountered during the scrobble attempt
-            _LOGGER.error(
-                "Failed to scrobble %s by %s: %s", self._current_track, self._artist, ex
-            )
-        else:
             _LOGGER.info(
                 "Successfully scrobbled %s by %s", self._current_track, self._artist
             )
-            self._last_scrobbled_track = (
-                self._artist,
-                self._current_track,
-                self._album,
-            )
             return True
-        return False
+        except (pylast.WSError, pylast.NetworkError) as ex:
+            _LOGGER.error(
+                "Failed to scrobble %s by %s: %s", self._current_track, self._artist, ex
+            )
+            return False
 
     def calculate_current_position(self, player):
         """Calculate the current media position."""
@@ -284,7 +283,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
 
                 media_position = self.calculate_current_position(
                     player
-                )  # Utilisez la méthode calculée
+                )
 
                 # update the current playing track. We only do this once per
                 # update cycle so media players higher in the list take precendence
@@ -292,7 +291,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 if self._update_now_playing and not updated_now_playing:
                     updated_now_playing = self.update_now_playing()
 
-                # Vérification ajoutée pour s'assurer que media_duration et media_position sont valides
+                # Check that media_duration and media_position are valid
                 if (
                     self._duration
                     and self._duration > 0
