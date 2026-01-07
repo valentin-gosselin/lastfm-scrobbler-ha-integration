@@ -44,7 +44,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Optional(CONF_CHECK_ENTITY, default=[]): EntitySelector(
             EntitySelectorConfig(
                 filter=EntityFilterSelectorConfig(
-                    domain=["person", "input_boolean", "switch"]
+                    domain=["person", "input_boolean", "switch", "binary_sensor"]
                 ),
                 multiple=True,
             )
@@ -150,7 +150,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ): EntitySelector(
                     EntitySelectorConfig(
                         filter=EntityFilterSelectorConfig(
-                            domain=["person", "input_boolean", "switch"]
+                            domain=["person", "input_boolean", "switch", "binary_sensor"]
                         ),
                         multiple=True,
                     )
