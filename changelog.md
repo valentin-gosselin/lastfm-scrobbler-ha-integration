@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-# Changelog
+## [1.4.0] - 2026-01-07
+
+### Added
+- **Radio/Stream scrobbling** (#3): Support for scrobbling tracks from radio stations and streams that don't provide `media_duration` or `media_position`. Instead of waiting for a playback percentage, scrobbling now triggers on track change for these sources.
+  - Intelligent jingle filtering: Automatically skips station jingles/news where the artist name contains the station name.
+  - Works with Music Assistant radio streams and other sources without reliable duration info.
+- **Binary sensor support** (#15 - thanks @p0lycarpio): `binary_sensor` entities can now be used as check entities to conditionally enable/disable scrobbling based on their on/off state.
+
+### Fixed
+- **Double scrobbles on network timeout** (#16): Fixed an issue where network timeouts during scrobbling could cause the same track to be scrobbled multiple times.
+  - Track is now marked as scrobbled before the API call to prevent retries on timeout.
+  - Now catches both `pylast.WSError` and `pylast.NetworkError` exceptions.
+  - Last.fm's server-side deduplication (same timestamp + artist + track) provides additional protection.
+- **Artist displayed with brackets** (#17): Fixed an issue where media players like Emby and Jellyfin return `media_artist` and `media_title` as Python lists (`['Artist Name']`) instead of strings, causing brackets to appear in scrobbles.
+- **NetworkError not caught in Now Playing**: The `update_now_playing` method now also catches `pylast.NetworkError` in addition to `WSError`.
 
 ## [1.3.1] - 2025-01-26
 ### Added
