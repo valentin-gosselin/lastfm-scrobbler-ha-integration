@@ -205,10 +205,11 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 _LOGGER.error("Error converting timestamp to datetime: %s", e)
                 return player.attributes.get("media_position", 0)
         else:
-            _LOGGER.error(
-                "Unexpected type for last_updated_at: %s", type(last_updated_at)
+            _LOGGER.debug(
+                "No media_position_updated_at available (type: %s) - likely a stream/radio",
+                type(last_updated_at),
             )
-            return player.attributes.get("media_position", 0)
+            return None
 
     def update(self):
         """Update the media player entity state."""
@@ -294,7 +295,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                 # Vérification ajoutée pour s'assurer que media_duration et media_position sont valides
                 if (
                     self._duration
-                    and isinstance(self._duration, (int, float))
+                    and self._duration > 0
                     and media_position is not None
                     and isinstance(media_position, (int, float))
                 ):
@@ -322,6 +323,31 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                         ):
                             # If the track has changed since the last scrobble, scrobble it
                             self.scrobble()
+                else:
+                    # Stream/radio mode: no reliable duration/position available
+                    # Scrobble immediately when the track changes
+
+                    # Filter out station jingles/news where artist contains the station name
+                    station_name = player.attributes.get("media_album_name") or player.attributes.get("media_station")
+                    if station_name and self._artist and station_name.lower() in self._artist.lower():
+                        _LOGGER.debug(
+                            "Skipping probable station jingle/news: %s by %s (station: %s)",
+                            self._current_track,
+                            self._artist,
+                            station_name,
+                        )
+                    elif self._last_scrobbled_track != (
+                        self._artist,
+                        self._current_track,
+                        self._album,
+                    ):
+                        _LOGGER.debug(
+                            "Stream mode detected (no reliable duration/position). "
+                            "Scrobbling on track change: %s by %s",
+                            self._current_track,
+                            self._artist,
+                        )
+                        self.scrobble()
 
             if reason_to_break:
                 _LOGGER.debug("Breaking the loop!")
