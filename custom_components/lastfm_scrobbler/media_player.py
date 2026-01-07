@@ -92,7 +92,7 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             entity = self.hass.states.get(player_entity_id)
             _LOGGER.debug("Checking %s", entity.entity_id)
 
-            if entity.domain in ["input_boolean", "switch"]:
+            if entity.domain in ["input_boolean", "switch", "binary_sensor"]:
                 if entity.state == "on":
                     _LOGGER.debug("%s is on! Agreed to scrobble", entity.entity_id)
                 else:
