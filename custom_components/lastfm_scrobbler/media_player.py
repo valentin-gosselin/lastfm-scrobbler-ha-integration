@@ -223,6 +223,13 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             if player is not None and player.state == STATE_PLAYING:
                 self._artist = player.attributes.get("media_artist")
                 self._current_track = player.attributes.get("media_title")
+
+                # Handle cases where media_artist/title is returned as a list (Emby, Jellyfin)
+                if isinstance(self._artist, list) and self._artist:
+                    self._artist = self._artist[0]
+                if isinstance(self._current_track, list) and self._current_track:
+                    self._current_track = self._current_track[0]
+
                 if not self._artist or not self._current_track:
                     # no scrobbling without artist and track info -
                     # go straight to the next player instead of doing more, ultimately useless work
