@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import logging
+import threading
 import time
 
 import pylast
@@ -80,6 +81,11 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         self._duration = None
         self._now_playing = None
         self._last_scrobbled_track = None
+        # update() runs in Home Assistant's sync worker thread pool, so several
+        # cycles can overlap. This lock serializes the check-then-scrobble
+        # section to prevent the same track being scrobbled multiple times by
+        # concurrent updates (issue #16).
+        self._scrobble_lock = threading.Lock()
         self._lastfm_network = lastfm_network
         self._media_players = media_players
         self._check_entities = check_entities
@@ -138,27 +144,32 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
 
     def scrobble(self):
         """Scrobble the current playing track to Last.fm."""
-        if self._last_scrobbled_track == (
-            self._artist,
-            self._current_track,
-            self._album,
-        ):
-            _LOGGER.info(
-                "Already scrobbled %s by %s, skipping",
-                self._current_track,
+        # Serialize the whole check-mark-send section: update() runs in HA's
+        # thread pool and cycles can overlap, so without this lock two
+        # concurrent updates could both pass the "already scrobbled" check
+        # before either marks the track, producing duplicate scrobbles (#16).
+        with self._scrobble_lock:
+            if self._last_scrobbled_track == (
                 self._artist,
+                self._current_track,
+                self._album,
+            ):
+                _LOGGER.info(
+                    "Already scrobbled %s by %s, skipping",
+                    self._current_track,
+                    self._artist,
+                )
+                return None
+
+            timestamp = int(time.time())
+
+            # Mark as scrobbled BEFORE the API call to prevent duplicates on
+            # timeout. Last.fm rejects duplicates with the same timestamp anyway.
+            self._last_scrobbled_track = (
+                self._artist,
+                self._current_track,
+                self._album,
             )
-            return None
-
-        timestamp = int(time.time())
-
-        # Mark as scrobbled BEFORE the API call to prevent duplicates on timeout
-        # Last.fm rejects duplicates with the same timestamp anyway
-        self._last_scrobbled_track = (
-            self._artist,
-            self._current_track,
-            self._album,
-        )
 
         try:
             self._lastfm_network.scrobble(
