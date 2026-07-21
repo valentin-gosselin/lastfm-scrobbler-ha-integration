@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-07-21
+
+### Added
+- **Music Assistant provider filter**: New option to control which Music Assistant providers are scrobbled, with three modes: `off`, `blocklist` (scrobble everything except the listed providers) and `allowlist` (scrobble only the listed providers).
+  - Providers are matched from the `media_content_id` prefix (Music Assistant encodes items as `<provider>://<type>/<id>`, e.g. `tidal://track/123`), matching on either the full provider instance id or its bare domain.
+  - The setup/options form pre-fills a **dropdown with the Music Assistant music providers**, read live from the running integration, and falls back to free-text entry when Music Assistant can't be reached.
+  - Primary use case: stop scrobbling **Tidal** (which scrobbles on its own) to avoid duplicate scrobbles, while still scrobbling local files.
+- **"Scrobble from all players" mode**: New toggle to watch every `media_player` entity instead of a fixed list, so newly created Music Assistant players are picked up automatically. In this mode, players whose `media_content_type` isn't `music` (TV, YouTube, ...) are skipped to avoid scrobbling video as if it were music.
+
+### Fixed
+- **Concurrent double scrobbles** (#16): Fixed a race condition where the same track could be scrobbled 2-4 times. `update()` runs in Home Assistant's sync worker thread pool and overlapping cycles could both pass the "already scrobbled" check before either marked the track. The check-then-mark section is now guarded by a lock. This addresses the residual double-scrobble reports on v1.4.0 that the earlier network-timeout fix did not cover.
+
 ## [1.4.0] - 2026-01-07
 
 ### Added
