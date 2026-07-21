@@ -13,7 +13,10 @@
           "scrobble_percentage": "Scrobble after playback of this percentage of track length.",
           "update_now_playing": "Check to also update the \"now playing\" info on last.fm",
           "entity_id": "Select media players to scrobble from (ordered by priority)",
-          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)"
+          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)",
+          "provider_filter_mode": "Music Assistant provider filter",
+          "provider_filter_list": "Music Assistant providers to filter (e.g. Tidal)",
+          "all_players": "Scrobble from ALL media players (ignores the selection below)"
         },
         "description": "Enter credentials according to the README and configure the behaviour of this scrobbler."
       }
@@ -32,9 +35,21 @@
           "scrobble_percentage": "Scrobble after playback of this percentage of track length.",
           "update_now_playing": "Check to also update the \"now playing\" info on last.fm",
           "entity_id": "Select media players to scrobble from (ordered by priority)",
-          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)"
+          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)",
+          "provider_filter_mode": "Music Assistant provider filter",
+          "provider_filter_list": "Music Assistant providers to filter (e.g. Tidal)",
+          "all_players": "Scrobble from ALL media players (ignores the selection below)"
         },
         "description": "Update credentials according to README or change the behaviour of this scrobbler."
+      }
+    }
+  },
+  "selector": {
+    "provider_filter_mode": {
+      "options": {
+        "off": "Off - scrobble every provider",
+        "blocklist": "Block list - scrobble all except the providers below",
+        "allowlist": "Allow list - only scrobble the providers below"
       }
     }
   }
