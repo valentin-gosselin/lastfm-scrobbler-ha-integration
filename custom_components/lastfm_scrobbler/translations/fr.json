@@ -13,7 +13,10 @@
           "scrobble_percentage": "Scrobble après lecture de ce pourcentage de la durée du morceau.",
           "update_now_playing": "Cochez pour également mettre à jour l'information \"en cours de lecture\" sur last.fm",
           "entity_id": "Sélectionnez les lecteurs multimédias à scrobbler (classés par priorité)",
-          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)"
+          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)",
+          "provider_filter_mode": "Filtre de fournisseur Music Assistant",
+          "provider_filter_list": "Fournisseurs Music Assistant à filtrer (ex. Tidal)",
+          "all_players": "Scrobbler depuis TOUS les lecteurs (ignore la sélection ci-dessous)"
         },
         "description": "Entrez les informations d'identification conformément au README et configurez le comportement de ce scrobbler."
       }
@@ -32,9 +35,21 @@
           "scrobble_percentage": "Scrobble après lecture de ce pourcentage de la durée du morceau.",
           "update_now_playing": "Cochez pour également mettre à jour l'information \"en cours de lecture\" sur last.fm",
           "entity_id": "Sélectionnez les lecteurs multimédias à scrobbler (classés par priorité)",
-          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)"
+          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)",
+          "provider_filter_mode": "Filtre de fournisseur Music Assistant",
+          "provider_filter_list": "Fournisseurs Music Assistant à filtrer (ex. Tidal)",
+          "all_players": "Scrobbler depuis TOUS les lecteurs (ignore la sélection ci-dessous)"
         },
         "description": "Mettez à jour les informations d'identification conformément au README ou modifiez le comportement de ce scrobbler."
+      }
+    }
+  },
+  "selector": {
+    "provider_filter_mode": {
+      "options": {
+        "off": "Désactivé - scrobbler tous les fournisseurs",
+        "blocklist": "Liste de blocage - scrobbler tout sauf les fournisseurs ci-dessous",
+        "allowlist": "Liste d'autorisation - scrobbler uniquement les fournisseurs ci-dessous"
       }
     }
   }

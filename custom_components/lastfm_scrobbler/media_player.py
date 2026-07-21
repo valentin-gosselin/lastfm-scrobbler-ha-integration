@@ -13,12 +13,18 @@ from homeassistant.const import CONF_API_KEY, CONF_ENTITY_ID, CONF_NAME, STATE_P
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
+    CONF_ALL_PLAYERS,
     CONF_API_SECRET,
     CONF_CHECK_ENTITY,
+    CONF_PROVIDER_FILTER_LIST,
+    CONF_PROVIDER_FILTER_MODE,
     CONF_SCROBBLE_PERCENTAGE,
     CONF_SESSION_KEY,
     CONF_UPDATE_NOW_PLAYING,
     DOMAIN,
+    PROVIDER_FILTER_ALLOWLIST,
+    PROVIDER_FILTER_BLOCKLIST,
+    PROVIDER_FILTER_OFF,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +46,9 @@ async def async_setup_entry(
     check_entities = config[CONF_CHECK_ENTITY]
     scrobble_percentage = config[CONF_SCROBBLE_PERCENTAGE]
     update_now_playing = config[CONF_UPDATE_NOW_PLAYING]
+    provider_filter_mode = config.get(CONF_PROVIDER_FILTER_MODE, PROVIDER_FILTER_OFF)
+    provider_filter_list = config.get(CONF_PROVIDER_FILTER_LIST, [])
+    all_players = config.get(CONF_ALL_PLAYERS, False)
 
     lastfm_network = pylast.LastFMNetwork(
         api_key=api_key, api_secret=api_secret, session_key=session_key
@@ -54,6 +63,9 @@ async def async_setup_entry(
                 check_entities,
                 scrobble_percentage,
                 update_now_playing,
+                provider_filter_mode,
+                provider_filter_list,
+                all_players,
             )
         ]
     )
@@ -70,6 +82,9 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         check_entities,
         scrobble_percentage,
         update_now_playing,
+        provider_filter_mode=PROVIDER_FILTER_OFF,
+        provider_filter_list=None,
+        all_players=False,
     ) -> None:
         """Initialize the media player entity."""
         self._name = name
@@ -91,6 +106,12 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
         self._check_entities = check_entities
         self._update_now_playing = update_now_playing
         self._scrobble_percentage = scrobble_percentage
+        self._all_players = all_players
+        self._provider_filter_mode = provider_filter_mode
+        # Normalize the filter list once: lowercase, stripped, no empties
+        self._provider_filter_list = [
+            p.strip().lower() for p in (provider_filter_list or []) if p and p.strip()
+        ]
 
     def check_entities(self):
         """Check if all the given check_entities agree to scrobble."""
@@ -118,6 +139,64 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
 
         _LOGGER.debug("All entity checks passed - we can scrobble!")
         return True
+
+    @staticmethod
+    def extract_provider(media_content_id):
+        """Extract the Music Assistant provider from a media_content_id.
+
+        Music Assistant builds item URIs as
+        "<provider_instance_or_domain>://<media_type>/<item_id>",
+        e.g. "tidal--f4QvvBiv://track/123" or "local_audio://track/456".
+        We return both the full instance id and its bare domain (the part
+        before the first "--") so callers can match on either.
+        """
+        if not media_content_id or "://" not in media_content_id:
+            return None, None
+        instance = media_content_id.split("://", 1)[0].strip().lower()
+        if not instance:
+            return None, None
+        # Provider instance ids look like "tidal--f4QvvBiv"; the domain is "tidal".
+        domain = instance.split("--", 1)[0]
+        return instance, domain
+
+    def provider_allowed(self, media_content_id):
+        """Decide whether a track from this provider is allowed to scrobble.
+
+        Only applies to Music Assistant players (those exposing a
+        provider-prefixed media_content_id). Non-MA players, or MA players
+        without a recognizable provider, are always allowed so existing
+        behaviour is preserved.
+        """
+        if self._provider_filter_mode == PROVIDER_FILTER_OFF:
+            return True
+
+        instance, domain = self.extract_provider(media_content_id)
+        if instance is None:
+            # No recognizable provider (non-MA player or missing content id).
+            # Don't block these - the filter only targets MA providers.
+            return True
+
+        # A provider matches the filter list if either its full instance id
+        # or its bare domain is listed (case-insensitive).
+        in_list = instance in self._provider_filter_list or (
+            domain is not None and domain in self._provider_filter_list
+        )
+
+        if self._provider_filter_mode == PROVIDER_FILTER_BLOCKLIST:
+            allowed = not in_list
+        elif self._provider_filter_mode == PROVIDER_FILTER_ALLOWLIST:
+            allowed = in_list
+        else:
+            allowed = True
+
+        if not allowed:
+            _LOGGER.debug(
+                "Provider '%s' (domain '%s') filtered out by %s - skipping",
+                instance,
+                domain,
+                self._provider_filter_mode,
+            )
+        return allowed
 
     def update_now_playing(self):
         """Update the current playing song."""
@@ -221,6 +300,25 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             )
             return None
 
+    def get_players_to_check(self):
+        """Return the list of media_player entity ids to check this cycle.
+
+        When "all players" is enabled we dynamically look up every
+        media_player entity currently known to Home Assistant (so newly
+        created Music Assistant players are picked up automatically), minus
+        this scrobbler's own entity to avoid checking ourselves. Otherwise we
+        use the user-selected list, preserving its priority order.
+        """
+        if not self._all_players:
+            return self._media_players
+
+        players = [
+            state.entity_id
+            for state in self.hass.states.async_all("media_player")
+            if state.entity_id != self.entity_id
+        ]
+        return players
+
     def update(self):
         """Update the media player entity state."""
         if not self.check_entities():
@@ -228,10 +326,25 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
             return False
         _LOGGER.debug("Entity checks passed - %s now updating", self.name)
         reason_to_break = False
-        for player_entity_id in self._media_players:
+        for player_entity_id in self.get_players_to_check():
             updated_now_playing = False
             player = self.hass.states.get(player_entity_id)
             if player is not None and player.state == STATE_PLAYING:
+                # In "all players" mode we look at every media_player, including
+                # ones that play video (TV, YouTube...). Only scrobble actual
+                # music: skip anything whose content type isn't "music". We only
+                # enforce this when a content type is reported, so players that
+                # don't set it keep their previous behaviour.
+                if self._all_players:
+                    content_type = player.attributes.get("media_content_type")
+                    if content_type is not None and content_type != "music":
+                        _LOGGER.debug(
+                            "Skipping %s: media_content_type is %r, not music",
+                            player.entity_id,
+                            content_type,
+                        )
+                        continue
+
                 self._artist = player.attributes.get("media_artist")
                 self._current_track = player.attributes.get("media_title")
 
@@ -258,6 +371,21 @@ class LastFMScrobblerMediaPlayer(MediaPlayerEntity):
                     player.entity_id,
                 )
                 reason_to_break = True
+
+                # Skip Music Assistant sources the user chose to filter out
+                # (e.g. Tidal, which already scrobbles on its own and would
+                # otherwise cause duplicate scrobbles). We skip both the
+                # "now playing" update and the scrobble for this player, but
+                # still break afterwards so a lower-priority player doesn't
+                # get scrobbled while this one is the active source.
+                if not self.provider_allowed(
+                    player.attributes.get("media_content_id")
+                ):
+                    _LOGGER.info(
+                        "%s is playing from a filtered provider - not scrobbling",
+                        player.entity_id,
+                    )
+                    break
 
                 if (
                     self._artist
