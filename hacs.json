@@ -6,7 +6,8 @@
     "dependencies": [],
     "homeassistant": "2023.10.1",
     "render_readme": true,
-    "zip_release": false,
+    "zip_release": true,
+    "filename": "lastfm_scrobbler.zip",
     "images": {
       "small": "https://github.com/valentin-gosselin/lastfm-scrobbler-ha-integration/blob/main/images/icon.png",
       "large": "https://github.com/valentin-gosselin/lastfm-scrobbler-ha-integration/blob/main/images/logo.png"

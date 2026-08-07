@@ -1,0 +1,31 @@
+name: Release
+
+# Attach a HACS-compatible zip of the integration to each published release.
+# The zip contains the contents of custom_components/lastfm_scrobbler/ at its
+# root, which is what HACS expects when `zip_release` + `filename` are set in
+# hacs.json. Attaching a release asset also enables the HACS download counter.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release-zip:
+    name: Build and attach release zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create zip
+        run: |
+          cd custom_components/lastfm_scrobbler
+          zip -r lastfm_scrobbler.zip . -x '*.pyc' -x '__pycache__/*'
+
+      - name: Upload zip to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: custom_components/lastfm_scrobbler/lastfm_scrobbler.zip
