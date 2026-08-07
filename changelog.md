@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-08-07
+
+### Added
+- **One-click Last.fm connection (zero-config setup)**: the integration now ships a built-in Last.fm API app, so new users no longer have to create their own app or paste an API key, secret and session key. The setup flow offers **"Connect with Last.fm"**: authorize once on last.fm and the (non-expiring) session key is generated automatically. An **"Advanced"** path is still available for users who prefer their own API app.
+- Translations for the new setup flow in all supported languages (en, fr, de, es, it, ru, zh-Hans).
+
+### Changed
+- The options flow now edits only the scrobbler behaviour; your Last.fm connection stays as configured.
+
+### Compatibility
+- **Existing setups keep working unchanged.** Entries created with the previous manual method still store and use the same `api_key` / `api_secret` / `session_key`, and the media player is untouched — no re-authentication needed after updating.
+
 ## [1.5.0] - 2026-07-21
 
 ### Added

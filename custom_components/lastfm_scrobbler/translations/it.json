@@ -1,42 +1,83 @@
 {
-    "config": {
-      "title": "lastfm_scrobbler",
-      "error": {},
-      "step": {
-        "user": {
-          "title": "Configura lastfm_scrobbler",
-          "data": {
-            "name": "Nome della nuova entità lastfm_scrobbler",
-            "api_key": "Chiave API di last.fm",
-            "api_secret": "Segreto API di last.fm",
-            "session_key": "Chiave di sessione di last.fm",
-            "scrobble_percentage": "Effettua lo scrobble dopo la riproduzione di questa percentuale della durata del brano.",
-            "update_now_playing": "Seleziona per aggiornare anche le informazioni di \"in riproduzione\" su last.fm",
-            "entity_id": "Seleziona i lettori multimediali da cui effettuare lo scrobble (ordinati per priorità)",
-            "check_entity": "Opzionale: Esegui lo scrobble solo quando TUTTE le entità selezionate sono \"positive\" (persona=a casa, interruttore=acceso, ecc.)"
-          },
-          "description": "Inserisci le credenziali secondo il README e configura il comportamento di questo scrobbler."
-        }
-      }
+  "config": {
+    "title": "LastFM Scrobbler",
+    "error": {
+      "auth_failed": "Autorizzazione non riuscita. Assicurati di aver cliccato «Sì, consenti l'accesso» sulla pagina di Last.fm, poi invia di nuovo."
     },
-    "options": {
-      "title": "lastfm_scrobbler",
-      "error": {},
-      "step": {
-        "init": {
-          "title": "Modifica un lastfm_scrobbler",
-          "data": {
-            "api_key": "Chiave API di last.fm",
-            "api_secret": "Segreto API di last.fm",
-            "session_key": "Chiave di sessione di last.fm",
-            "scrobble_percentage": "Effettua lo scrobble dopo la riproduzione di questa percentuale della durata del brano.",
-            "update_now_playing": "Seleziona per aggiornare anche le informazioni di \"in riproduzione\" su last.fm",
-            "entity_id": "Seleziona i lettori multimediali da cui effettuare lo scrobble (ordinati per priorità)",
-            "check_entity": "Opzionale: Esegui lo scrobble solo quando TUTTE le entità selezionate sono \"positive\" (persona=a casa, interruttore=acceso, ecc.)"
-          },
-          "description": "Aggiorna le credenziali secondo il README o modifica il comportamento di questo scrobbler."
-        }
+    "step": {
+      "user": {
+        "title": "Configura LastFM Scrobbler",
+        "menu_options": {
+          "connect": "Connetti con Last.fm (consigliato)",
+          "advanced": "Avanzato: usa la mia app API"
+        },
+        "description": "Scegli come connetterti. «Connetti con Last.fm» usa un'app integrata: basta autorizzare e hai finito, niente da creare."
+      },
+      "connect": {
+        "title": "Connetti con Last.fm",
+        "data": {
+          "name": "Nome dell'entità scrobbler da creare"
+        },
+        "description": "1. Apri questo link e clicca «Sì, consenti l'accesso»: {auth_url}\n\n2. Torna qui e invia per terminare. La tua sessione Last.fm non scade mai, quindi lo fai una sola volta."
+      },
+      "behaviour": {
+        "title": "Comportamento dello scrobbler",
+        "data": {
+          "scrobble_percentage": "Esegui scrobble dopo la riproduzione di questa percentuale della durata del brano.",
+          "update_now_playing": "Seleziona per aggiornare anche l'info «in riproduzione» su last.fm",
+          "entity_id": "Seleziona i lettori multimediali da cui fare scrobble (in ordine di priorità)",
+          "check_entity": "Opzionale: esegui scrobble solo se TUTTE le entità selezionate sono «positive» (persona=a casa, interruttore=acceso, ecc.)",
+          "provider_filter_mode": "Filtro provider Music Assistant",
+          "provider_filter_list": "Provider Music Assistant da filtrare (es. Tidal)",
+          "all_players": "Esegui scrobble da TUTTI i lettori (ignora la selezione sotto)"
+        },
+        "description": "Configura il comportamento di questo scrobbler."
+      },
+      "advanced": {
+        "title": "Configurazione avanzata",
+        "data": {
+          "name": "Nome dell'entità scrobbler da creare",
+          "api_key": "Chiave API last.fm",
+          "api_secret": "Secret API last.fm",
+          "session_key": "Chiave di sessione last.fm",
+          "scrobble_percentage": "Esegui scrobble dopo la riproduzione di questa percentuale della durata del brano.",
+          "update_now_playing": "Seleziona per aggiornare anche l'info «in riproduzione» su last.fm",
+          "entity_id": "Seleziona i lettori multimediali da cui fare scrobble (in ordine di priorità)",
+          "check_entity": "Opzionale: esegui scrobble solo se TUTTE le entità selezionate sono «positive» (persona=a casa, interruttore=acceso, ecc.)",
+          "provider_filter_mode": "Filtro provider Music Assistant",
+          "provider_filter_list": "Provider Music Assistant da filtrare (es. Tidal)",
+          "all_players": "Esegui scrobble da TUTTI i lettori (ignora la selezione sotto)"
+        },
+        "description": "Fornisci le tue credenziali API Last.fm. Crea un'app su {api_account_url} per ottenere una chiave e un secret API, poi genera una chiave di sessione."
+      }
+    }
+  },
+  "options": {
+    "title": "LastFM Scrobbler",
+    "error": {},
+    "step": {
+      "init": {
+        "title": "Modifica LastFM Scrobbler",
+        "data": {
+          "scrobble_percentage": "Esegui scrobble dopo la riproduzione di questa percentuale della durata del brano.",
+          "update_now_playing": "Seleziona per aggiornare anche l'info «in riproduzione» su last.fm",
+          "entity_id": "Seleziona i lettori multimediali da cui fare scrobble (in ordine di priorità)",
+          "check_entity": "Opzionale: esegui scrobble solo se TUTTE le entità selezionate sono «positive» (persona=a casa, interruttore=acceso, ecc.)",
+          "provider_filter_mode": "Filtro provider Music Assistant",
+          "provider_filter_list": "Provider Music Assistant da filtrare (es. Tidal)",
+          "all_players": "Esegui scrobble da TUTTI i lettori (ignora la selezione sotto)"
+        },
+        "description": "Modifica il comportamento di questo scrobbler. La tua connessione Last.fm resta invariata."
+      }
+    }
+  },
+  "selector": {
+    "provider_filter_mode": {
+      "options": {
+        "off": "Disattivato - scrobble di ogni provider",
+        "blocklist": "Lista di blocco - scrobble di tutti tranne i provider sotto",
+        "allowlist": "Lista consentiti - scrobble solo dei provider sotto"
       }
     }
   }
-  
+}

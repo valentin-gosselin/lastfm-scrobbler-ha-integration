@@ -1,42 +1,83 @@
 {
-    "config": {
-      "title": "lastfm_scrobbler",
-      "error": {},
-      "step": {
-        "user": {
-          "title": "设置 lastfm_scrobbler",
-          "data": {
-            "name": "新创建的 lastfm_scrobbler 实体名称",
-            "api_key": "last.fm API 密钥",
-            "api_secret": "last.fm API 密钥",
-            "session_key": "last.fm 会话密钥",
-            "scrobble_percentage": "在播放达到该曲目长度百分比后进行 scrobble。",
-            "update_now_playing": "勾选以同时更新 last.fm 上的“正在播放”信息",
-            "entity_id": "选择用于 scrobble 的媒体播放器（按优先级排列）",
-            "check_entity": "可选：仅在所有选定实体为“有效”（例如：person=home，switch=on 等）时进行 scrobble"
-          },
-          "description": "根据 README 输入凭据并配置此 scrobbler 的行为。"
-        }
-      }
+  "config": {
+    "title": "LastFM Scrobbler",
+    "error": {
+      "auth_failed": "授权失败。请确认你已在 Last.fm 页面点击「是，允许访问」，然后再次提交。"
     },
-    "options": {
-      "title": "lastfm_scrobbler",
-      "error": {},
-      "step": {
-        "init": {
-          "title": "编辑 lastfm_scrobbler",
-          "data": {
-            "api_key": "last.fm API 密钥",
-            "api_secret": "last.fm API 密钥",
-            "session_key": "last.fm 会话密钥",
-            "scrobble_percentage": "在播放达到该曲目长度百分比后进行 scrobble。",
-            "update_now_playing": "勾选以同时更新 last.fm 上的“正在播放”信息",
-            "entity_id": "选择用于 scrobble 的媒体播放器（按优先级排列）",
-            "check_entity": "可选：仅在所有选定实体为“有效”（例如：person=home，switch=on 等）时进行 scrobble"
-          },
-          "description": "根据 README 更新凭据或更改此 scrobbler 的行为。"
-        }
+    "step": {
+      "user": {
+        "title": "设置 LastFM Scrobbler",
+        "menu_options": {
+          "connect": "使用 Last.fm 连接（推荐）",
+          "advanced": "高级：使用我自己的 API 应用"
+        },
+        "description": "选择连接方式。「使用 Last.fm 连接」使用内置应用：只需授权即可，无需创建任何东西。"
+      },
+      "connect": {
+        "title": "使用 Last.fm 连接",
+        "data": {
+          "name": "要创建的 scrobbler 实体名称"
+        },
+        "description": "1. 打开此链接并点击「是，允许访问」：{auth_url}\n\n2. 返回此处并提交以完成。你的 Last.fm 会话永不过期，因此只需操作一次。"
+      },
+      "behaviour": {
+        "title": "Scrobbler 行为",
+        "data": {
+          "scrobble_percentage": "在播放曲目达到此百分比后进行 scrobble。",
+          "update_now_playing": "勾选以同时更新 last.fm 上的「正在播放」信息",
+          "entity_id": "选择要 scrobble 的媒体播放器（按优先级排序）",
+          "check_entity": "可选：仅当所有所选实体均为「正向」时才 scrobble（人=在家，开关=开 等）",
+          "provider_filter_mode": "Music Assistant 提供商过滤",
+          "provider_filter_list": "要过滤的 Music Assistant 提供商（如 Tidal）",
+          "all_players": "从所有媒体播放器 scrobble（忽略下方选择）"
+        },
+        "description": "配置此 scrobbler 的行为。"
+      },
+      "advanced": {
+        "title": "高级设置",
+        "data": {
+          "name": "要创建的 scrobbler 实体名称",
+          "api_key": "last.fm API 密钥",
+          "api_secret": "last.fm API 私钥",
+          "session_key": "last.fm 会话密钥",
+          "scrobble_percentage": "在播放曲目达到此百分比后进行 scrobble。",
+          "update_now_playing": "勾选以同时更新 last.fm 上的「正在播放」信息",
+          "entity_id": "选择要 scrobble 的媒体播放器（按优先级排序）",
+          "check_entity": "可选：仅当所有所选实体均为「正向」时才 scrobble（人=在家，开关=开 等）",
+          "provider_filter_mode": "Music Assistant 提供商过滤",
+          "provider_filter_list": "要过滤的 Music Assistant 提供商（如 Tidal）",
+          "all_players": "从所有媒体播放器 scrobble（忽略下方选择）"
+        },
+        "description": "提供你自己的 Last.fm API 凭据。在 {api_account_url} 创建应用以获取 API 密钥和私钥，然后生成会话密钥。"
+      }
+    }
+  },
+  "options": {
+    "title": "LastFM Scrobbler",
+    "error": {},
+    "step": {
+      "init": {
+        "title": "编辑 LastFM Scrobbler",
+        "data": {
+          "scrobble_percentage": "在播放曲目达到此百分比后进行 scrobble。",
+          "update_now_playing": "勾选以同时更新 last.fm 上的「正在播放」信息",
+          "entity_id": "选择要 scrobble 的媒体播放器（按优先级排序）",
+          "check_entity": "可选：仅当所有所选实体均为「正向」时才 scrobble（人=在家，开关=开 等）",
+          "provider_filter_mode": "Music Assistant 提供商过滤",
+          "provider_filter_list": "要过滤的 Music Assistant 提供商（如 Tidal）",
+          "all_players": "从所有媒体播放器 scrobble（忽略下方选择）"
+        },
+        "description": "更改此 scrobbler 的行为。你的 Last.fm 连接保持不变。"
+      }
+    }
+  },
+  "selector": {
+    "provider_filter_mode": {
+      "options": {
+        "off": "关闭 - scrobble 所有提供商",
+        "blocklist": "屏蔽列表 - scrobble 除下方以外的所有提供商",
+        "allowlist": "允许列表 - 仅 scrobble 下方的提供商"
       }
     }
   }
-  
+}

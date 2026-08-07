@@ -1,12 +1,42 @@
 {
   "config": {
-    "title": "lastfm_scrobbler",
-    "error": {},
+    "title": "LastFM Scrobbler",
+    "error": {
+      "auth_failed": "Authorization failed. Make sure you clicked \"Yes, allow access\" on the Last.fm page, then submit again."
+    },
     "step": {
       "user": {
-        "title": "Setup lastfm_scrobbler",
+        "title": "Set up LastFM Scrobbler",
+        "menu_options": {
+          "connect": "Connect with Last.fm (recommended)",
+          "advanced": "Advanced: use my own API app"
+        },
+        "description": "Choose how to connect. \"Connect with Last.fm\" uses a built-in app: just authorize and you're done, nothing to create."
+      },
+      "connect": {
+        "title": "Connect with Last.fm",
         "data": {
-          "name": "Name of the newly created lastfm_scrobbler entity",
+          "name": "Name of the newly created scrobbler entity"
+        },
+        "description": "1. Open this link and click \"Yes, allow access\": {auth_url}\n\n2. Come back here and submit to finish. Your Last.fm session never expires, so you only do this once."
+      },
+      "behaviour": {
+        "title": "Scrobbler behaviour",
+        "data": {
+          "scrobble_percentage": "Scrobble after playback of this percentage of track length.",
+          "update_now_playing": "Check to also update the \"now playing\" info on last.fm",
+          "entity_id": "Select media players to scrobble from (ordered by priority)",
+          "check_entity": "Optional: Only scrobble when ALL selected entities are \"positive\" (person=home, switch=on, etc.)",
+          "provider_filter_mode": "Music Assistant provider filter",
+          "provider_filter_list": "Music Assistant providers to filter (e.g. Tidal)",
+          "all_players": "Scrobble from ALL media players (ignores the selection below)"
+        },
+        "description": "Configure the behaviour of this scrobbler."
+      },
+      "advanced": {
+        "title": "Advanced setup",
+        "data": {
+          "name": "Name of the newly created scrobbler entity",
           "api_key": "last.fm API key",
           "api_secret": "last.fm API secret",
           "session_key": "last.fm Session key",
@@ -18,20 +48,17 @@
           "provider_filter_list": "Music Assistant providers to filter (e.g. Tidal)",
           "all_players": "Scrobble from ALL media players (ignores the selection below)"
         },
-        "description": "Enter credentials according to the README and configure the behaviour of this scrobbler."
+        "description": "Provide your own Last.fm API credentials. Create an app at {api_account_url} to get an API key and secret, then generate a session key."
       }
     }
   },
   "options": {
-    "title": "lastfm_scrobbler",
+    "title": "LastFM Scrobbler",
     "error": {},
     "step": {
       "init": {
-        "title": "Edit a lastfm_scrobbler",
+        "title": "Edit LastFM Scrobbler",
         "data": {
-          "api_key": "last.fm API key",
-          "api_secret": "last.fm API secret",
-          "session_key": "last.fm Session key",
           "scrobble_percentage": "Scrobble after playback of this percentage of track length.",
           "update_now_playing": "Check to also update the \"now playing\" info on last.fm",
           "entity_id": "Select media players to scrobble from (ordered by priority)",
@@ -40,7 +67,7 @@
           "provider_filter_list": "Music Assistant providers to filter (e.g. Tidal)",
           "all_players": "Scrobble from ALL media players (ignores the selection below)"
         },
-        "description": "Update credentials according to README or change the behaviour of this scrobbler."
+        "description": "Change the behaviour of this scrobbler. Your Last.fm connection stays as configured."
       }
     }
   },

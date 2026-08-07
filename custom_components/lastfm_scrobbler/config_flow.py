@@ -1,10 +1,26 @@
-"""Config flow for lastfm_scrobbler integration."""
+"""Config flow for lastfm_scrobbler integration.
+
+Two ways to connect:
+
+- **Connect with Last.fm (default, zero-config):** the integration ships a
+  built-in Last.fm API app, so the user just authorizes on last.fm and we
+  generate the (non-expiring) session key for them. Nothing to create or paste.
+- **Advanced:** the user provides their own api key / secret / session key,
+  exactly like before.
+
+Backward compatibility: existing entries store `api_key`, `api_secret` and
+`session_key` in entry.data. This flow keeps that exact shape (the built-in
+path just fills those three fields automatically), so already-configured users
+keep working after the update with no change, and the options flow / media
+player are untouched.
+"""
 
 from __future__ import annotations
 
 import logging
 from typing import Any
 
+import pylast
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -33,6 +49,9 @@ from .const import (
     CONF_SESSION_KEY,
     CONF_UPDATE_NOW_PLAYING,
     DOMAIN,
+    LASTFM_API_ACCOUNT_URL,
+    LASTFM_BUILTIN_API_KEY,
+    LASTFM_BUILTIN_API_SECRET,
     MASS_DOMAIN,
     PROVIDER_FILTER_MODES,
     PROVIDER_FILTER_OFF,
@@ -123,39 +142,54 @@ def _provider_filter_mode_field(default=PROVIDER_FILTER_OFF):
     )
 
 
-def _build_user_schema(hass):
-    """Build the initial setup schema (with dynamic MA provider list)."""
-    return vol.Schema(
-        {
-            vol.Required(CONF_NAME, default="My Scrobbler"): str,
-            vol.Required(CONF_API_KEY): str,
-            vol.Required(CONF_API_SECRET): str,  # API_SECRET
-            vol.Required(CONF_SESSION_KEY): str,  # SESSION_KEY
-            vol.Required(CONF_SCROBBLE_PERCENTAGE, default=50): int,
-            vol.Required(CONF_UPDATE_NOW_PLAYING, default=False): bool,
-            vol.Required(CONF_ALL_PLAYERS, default=False): bool,
-            vol.Optional(CONF_ENTITY_ID, default=[]): EntitySelector(
-                EntitySelectorConfig(
-                    filter=EntityFilterSelectorConfig(domain="media_player"),
-                    multiple=True,
-                )
-            ),
-            vol.Optional(CONF_CHECK_ENTITY, default=[]): EntitySelector(
-                EntitySelectorConfig(
-                    filter=EntityFilterSelectorConfig(
-                        domain=["person", "input_boolean", "switch", "binary_sensor"]
-                    ),
-                    multiple=True,
-                )
-            ),
-            vol.Required(
-                CONF_PROVIDER_FILTER_MODE, default=PROVIDER_FILTER_OFF
-            ): _provider_filter_mode_field(),
-            vol.Optional(
-                CONF_PROVIDER_FILTER_LIST, default=[]
-            ): _provider_filter_list_field(hass, []),
-        }
-    )
+def _behaviour_schema(hass, defaults=None):
+    """Build the behaviour part of the form (players, filters, percentage).
+
+    Shared by the connect and advanced paths and the options flow so all three
+    stay in sync. `defaults` supplies current values when editing.
+    """
+    defaults = defaults or {}
+    return {
+        vol.Required(
+            CONF_SCROBBLE_PERCENTAGE,
+            default=defaults.get(CONF_SCROBBLE_PERCENTAGE, 50),
+        ): int,
+        vol.Required(
+            CONF_UPDATE_NOW_PLAYING,
+            default=defaults.get(CONF_UPDATE_NOW_PLAYING, False),
+        ): bool,
+        vol.Required(
+            CONF_ALL_PLAYERS, default=defaults.get(CONF_ALL_PLAYERS, False)
+        ): bool,
+        vol.Optional(
+            CONF_ENTITY_ID, default=defaults.get(CONF_ENTITY_ID, [])
+        ): EntitySelector(
+            EntitySelectorConfig(
+                filter=EntityFilterSelectorConfig(domain="media_player"),
+                multiple=True,
+            )
+        ),
+        vol.Optional(
+            CONF_CHECK_ENTITY, default=defaults.get(CONF_CHECK_ENTITY, [])
+        ): EntitySelector(
+            EntitySelectorConfig(
+                filter=EntityFilterSelectorConfig(
+                    domain=["person", "input_boolean", "switch", "binary_sensor"]
+                ),
+                multiple=True,
+            )
+        ),
+        vol.Required(
+            CONF_PROVIDER_FILTER_MODE,
+            default=defaults.get(CONF_PROVIDER_FILTER_MODE, PROVIDER_FILTER_OFF),
+        ): _provider_filter_mode_field(),
+        vol.Optional(
+            CONF_PROVIDER_FILTER_LIST,
+            default=defaults.get(CONF_PROVIDER_FILTER_LIST, []),
+        ): _provider_filter_list_field(
+            hass, defaults.get(CONF_PROVIDER_FILTER_LIST, [])
+        ),
+    }
 
 
 class ScrobblerConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -163,33 +197,131 @@ class ScrobblerConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        """Initialize the flow state."""
+        self._data: dict[str, Any] = {}
+        self._auth_url: str | None = None
+        self._auth_token: str | None = None
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step."""
+        """Entry point: choose between the built-in connect flow and advanced."""
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=["connect", "advanced"],
+        )
+
+    async def async_step_connect(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Zero-config path: authorize on Last.fm and generate a session key."""
         errors: dict[str, str] = {}
+
         if user_input is not None:
-            #Check if all optional fields have defaults values
+            # The user says they authorized the app; exchange the token for a
+            # (permanent) session key using the built-in credentials.
+            try:
+                session_key = await self.hass.async_add_executor_job(
+                    self._exchange_session_key
+                )
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.error("Last.fm authorization failed: %s", err)
+                errors["base"] = "auth_failed"
+            else:
+                self._data[CONF_NAME] = user_input.get(CONF_NAME, "My Scrobbler")
+                self._data[CONF_API_KEY] = LASTFM_BUILTIN_API_KEY
+                self._data[CONF_API_SECRET] = LASTFM_BUILTIN_API_SECRET
+                self._data[CONF_SESSION_KEY] = session_key
+                return await self.async_step_behaviour()
+
+        # First display: generate the authorization URL (with a fresh token).
+        if self._auth_url is None:
+            self._auth_url, self._auth_token = await self.hass.async_add_executor_job(
+                self._make_auth_url
+            )
+
+        return self.async_show_form(
+            step_id="connect",
+            data_schema=vol.Schema(
+                {vol.Required(CONF_NAME, default="My Scrobbler"): str}
+            ),
+            errors=errors,
+            description_placeholders={"auth_url": self._auth_url},
+        )
+
+    async def async_step_behaviour(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Configure scrobble behaviour, then create the entry."""
+        if user_input is not None:
             user_input.setdefault(CONF_CHECK_ENTITY, [])
             user_input.setdefault(CONF_PROVIDER_FILTER_MODE, PROVIDER_FILTER_OFF)
             user_input.setdefault(CONF_PROVIDER_FILTER_LIST, [])
             user_input.setdefault(CONF_ALL_PLAYERS, False)
             user_input.setdefault(CONF_ENTITY_ID, [])
-            try:
-                pass
-            except Exception:
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
-            else:
-                return self.async_create_entry(
-                    title=user_input[CONF_NAME], data=user_input
-                )
+            self._data.update(user_input)
+            return self.async_create_entry(
+                title=self._data[CONF_NAME], data=self._data
+            )
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=_build_user_schema(self.hass),
-            errors=errors,
+            step_id="behaviour",
+            data_schema=vol.Schema(_behaviour_schema(self.hass)),
         )
+
+    async def async_step_advanced(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Advanced path: user provides their own api key / secret / session."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            user_input.setdefault(CONF_CHECK_ENTITY, [])
+            user_input.setdefault(CONF_PROVIDER_FILTER_MODE, PROVIDER_FILTER_OFF)
+            user_input.setdefault(CONF_PROVIDER_FILTER_LIST, [])
+            user_input.setdefault(CONF_ALL_PLAYERS, False)
+            user_input.setdefault(CONF_ENTITY_ID, [])
+            return self.async_create_entry(
+                title=user_input[CONF_NAME], data=user_input
+            )
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_NAME, default="My Scrobbler"): str,
+                vol.Required(CONF_API_KEY): str,
+                vol.Required(CONF_API_SECRET): str,
+                vol.Required(CONF_SESSION_KEY): str,
+                **_behaviour_schema(self.hass),
+            }
+        )
+        return self.async_show_form(
+            step_id="advanced",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={"api_account_url": LASTFM_API_ACCOUNT_URL},
+        )
+
+    # --- pylast helpers (blocking; run in executor) -----------------------
+
+    def _make_auth_url(self) -> tuple[str, str]:
+        """Create a Last.fm web-auth URL and return (url, token)."""
+        network = pylast.LastFMNetwork(
+            api_key=LASTFM_BUILTIN_API_KEY, api_secret=LASTFM_BUILTIN_API_SECRET
+        )
+        generator = pylast.SessionKeyGenerator(network)
+        url = generator.get_web_auth_url()
+        token = generator.web_auth_tokens[url]
+        return url, token
+
+    def _exchange_session_key(self) -> str:
+        """Exchange the authorized token for a permanent session key."""
+        network = pylast.LastFMNetwork(
+            api_key=LASTFM_BUILTIN_API_KEY, api_secret=LASTFM_BUILTIN_API_SECRET
+        )
+        generator = pylast.SessionKeyGenerator(network)
+        # Passing the token explicitly avoids relying on generator state that
+        # doesn't survive across config-flow steps.
+        return generator.get_web_auth_session_key(self._auth_url, self._auth_token)
 
     @staticmethod
     @callback
@@ -212,82 +344,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         config = self.hass.data[DOMAIN][self.config_entry.entry_id]
 
         if user_input is not None:
-            #Check if all optional fields have defaults values
             user_input.setdefault(CONF_CHECK_ENTITY, [])
             user_input.setdefault(CONF_PROVIDER_FILTER_MODE, PROVIDER_FILTER_OFF)
             user_input.setdefault(CONF_PROVIDER_FILTER_LIST, [])
             user_input.setdefault(CONF_ALL_PLAYERS, False)
             user_input.setdefault(CONF_ENTITY_ID, [])
 
-            try:
-                pass
-            except Exception:
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
-            else:
-                # preserve old name
-                user_input[CONF_NAME] = config[CONF_NAME]
-                # TODO: I don't really understand why or how these two calls work
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=user_input,
-                    options=self.config_entry.options,
-                )
-                return self.async_create_entry(data=user_input)
+            # Preserve name and credentials that aren't part of this form.
+            user_input[CONF_NAME] = config[CONF_NAME]
+            user_input.setdefault(CONF_API_KEY, config[CONF_API_KEY])
+            user_input.setdefault(CONF_API_SECRET, config[CONF_API_SECRET])
+            user_input.setdefault(CONF_SESSION_KEY, config[CONF_SESSION_KEY])
 
-        options_schema = vol.Schema(
-            {
-                vol.Required(CONF_API_KEY, default=config[CONF_API_KEY]): str,
-                vol.Required(
-                    CONF_API_SECRET, default=config[CONF_API_SECRET]
-                ): str,  # API_SECRET
-                vol.Required(
-                    CONF_SESSION_KEY, default=config[CONF_SESSION_KEY]
-                ): str,  # SESSION_KEY
-                vol.Required(
-                    CONF_SCROBBLE_PERCENTAGE,
-                    default=config[CONF_SCROBBLE_PERCENTAGE],
-                ): int,
-                vol.Required(
-                    CONF_UPDATE_NOW_PLAYING,
-                    default=config[CONF_UPDATE_NOW_PLAYING],
-                ): bool,
-                vol.Required(
-                    CONF_ALL_PLAYERS,
-                    default=config.get(CONF_ALL_PLAYERS, False),
-                ): bool,
-                vol.Optional(
-                    CONF_ENTITY_ID, default=config.get(CONF_ENTITY_ID, [])
-                ): EntitySelector(
-                    EntitySelectorConfig(
-                        filter=EntityFilterSelectorConfig(domain="media_player"),
-                        multiple=True,
-                    )
-                ),
-                vol.Optional(
-                    CONF_CHECK_ENTITY, default=config.get(CONF_CHECK_ENTITY, [])
-                ): EntitySelector(
-                    EntitySelectorConfig(
-                        filter=EntityFilterSelectorConfig(
-                            domain=["person", "input_boolean", "switch", "binary_sensor"]
-                        ),
-                        multiple=True,
-                    )
-                ),
-                vol.Required(
-                    CONF_PROVIDER_FILTER_MODE,
-                    default=config.get(
-                        CONF_PROVIDER_FILTER_MODE, PROVIDER_FILTER_OFF
-                    ),
-                ): _provider_filter_mode_field(),
-                vol.Optional(
-                    CONF_PROVIDER_FILTER_LIST,
-                    default=config.get(CONF_PROVIDER_FILTER_LIST, []),
-                ): _provider_filter_list_field(
-                    self.hass, config.get(CONF_PROVIDER_FILTER_LIST, [])
-                ),
-            }
-        )
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                data=user_input,
+                options=self.config_entry.options,
+            )
+            return self.async_create_entry(data=user_input)
+
+        # Show only the behaviour fields; credentials stay as configured. Users
+        # who set up with the old manual method keep their stored credentials.
+        options_schema = vol.Schema(_behaviour_schema(self.hass, defaults=config))
 
         return self.async_show_form(
             step_id="init", data_schema=options_schema, errors=errors

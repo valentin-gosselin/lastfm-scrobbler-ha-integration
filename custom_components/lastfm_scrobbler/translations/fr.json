@@ -1,46 +1,73 @@
 {
   "config": {
-    "title": "lastfm_scrobbler",
-    "error": {},
+    "title": "LastFM Scrobbler",
+    "error": {
+      "auth_failed": "Autorisation échouée. Vérifiez que vous avez bien cliqué sur « Oui, autoriser l'accès » sur la page Last.fm, puis validez à nouveau."
+    },
     "step": {
       "user": {
-        "title": "Configurer lastfm_scrobbler",
+        "title": "Configurer LastFM Scrobbler",
+        "menu_options": {
+          "connect": "Se connecter avec Last.fm (recommandé)",
+          "advanced": "Avancé : utiliser ma propre application API"
+        },
+        "description": "Choisissez comment vous connecter. « Se connecter avec Last.fm » utilise une application intégrée : autorisez simplement et c'est terminé, rien à créer."
+      },
+      "connect": {
+        "title": "Se connecter avec Last.fm",
         "data": {
-          "name": "Nom de la nouvelle entité lastfm_scrobbler créée",
-          "api_key": "Clé API de last.fm",
-          "api_secret": "Secret API de last.fm",
-          "session_key": "Clé de session de last.fm",
-          "scrobble_percentage": "Scrobble après lecture de ce pourcentage de la durée du morceau.",
-          "update_now_playing": "Cochez pour également mettre à jour l'information \"en cours de lecture\" sur last.fm",
-          "entity_id": "Sélectionnez les lecteurs multimédias à scrobbler (classés par priorité)",
-          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)",
-          "provider_filter_mode": "Filtre de fournisseur Music Assistant",
+          "name": "Nom de l'entité scrobbler à créer"
+        },
+        "description": "1. Ouvrez ce lien et cliquez sur « Oui, autoriser l'accès » : {auth_url}\n\n2. Revenez ici et validez pour terminer. Votre session Last.fm n'expire jamais, vous ne le faites donc qu'une seule fois."
+      },
+      "behaviour": {
+        "title": "Comportement du scrobbler",
+        "data": {
+          "scrobble_percentage": "Scrobbler après lecture de ce pourcentage de la durée du morceau.",
+          "update_now_playing": "Cochez pour mettre aussi à jour l'info « en écoute » sur last.fm",
+          "entity_id": "Lecteurs multimédia à scrobbler (par ordre de priorité)",
+          "check_entity": "Optionnel : ne scrobbler que si TOUTES les entités sélectionnées sont « positives » (personne=à la maison, interrupteur=activé, etc.)",
+          "provider_filter_mode": "Filtre de fournisseurs Music Assistant",
           "provider_filter_list": "Fournisseurs Music Assistant à filtrer (ex. Tidal)",
           "all_players": "Scrobbler depuis TOUS les lecteurs (ignore la sélection ci-dessous)"
         },
-        "description": "Entrez les informations d'identification conformément au README et configurez le comportement de ce scrobbler."
+        "description": "Configurez le comportement de ce scrobbler."
+      },
+      "advanced": {
+        "title": "Configuration avancée",
+        "data": {
+          "name": "Nom de l'entité scrobbler à créer",
+          "api_key": "Clé API last.fm",
+          "api_secret": "Secret API last.fm",
+          "session_key": "Clé de session last.fm",
+          "scrobble_percentage": "Scrobbler après lecture de ce pourcentage de la durée du morceau.",
+          "update_now_playing": "Cochez pour mettre aussi à jour l'info « en écoute » sur last.fm",
+          "entity_id": "Lecteurs multimédia à scrobbler (par ordre de priorité)",
+          "check_entity": "Optionnel : ne scrobbler que si TOUTES les entités sélectionnées sont « positives » (personne=à la maison, interrupteur=activé, etc.)",
+          "provider_filter_mode": "Filtre de fournisseurs Music Assistant",
+          "provider_filter_list": "Fournisseurs Music Assistant à filtrer (ex. Tidal)",
+          "all_players": "Scrobbler depuis TOUS les lecteurs (ignore la sélection ci-dessous)"
+        },
+        "description": "Fournissez vos propres identifiants d'API Last.fm. Créez une application sur {api_account_url} pour obtenir une clé et un secret API, puis générez une clé de session."
       }
     }
   },
   "options": {
-    "title": "lastfm_scrobbler",
+    "title": "LastFM Scrobbler",
     "error": {},
     "step": {
       "init": {
-        "title": "Modifier un lastfm_scrobbler",
+        "title": "Modifier LastFM Scrobbler",
         "data": {
-          "api_key": "Clé API de last.fm",
-          "api_secret": "Secret API de last.fm",
-          "session_key": "Clé de session de last.fm",
-          "scrobble_percentage": "Scrobble après lecture de ce pourcentage de la durée du morceau.",
-          "update_now_playing": "Cochez pour également mettre à jour l'information \"en cours de lecture\" sur last.fm",
-          "entity_id": "Sélectionnez les lecteurs multimédias à scrobbler (classés par priorité)",
-          "check_entity": "Optionnel : Scrobble uniquement lorsque TOUS les entités sélectionnées sont \"positives\" (personne=maison, interrupteur=activé, etc.)",
-          "provider_filter_mode": "Filtre de fournisseur Music Assistant",
+          "scrobble_percentage": "Scrobbler après lecture de ce pourcentage de la durée du morceau.",
+          "update_now_playing": "Cochez pour mettre aussi à jour l'info « en écoute » sur last.fm",
+          "entity_id": "Lecteurs multimédia à scrobbler (par ordre de priorité)",
+          "check_entity": "Optionnel : ne scrobbler que si TOUTES les entités sélectionnées sont « positives » (personne=à la maison, interrupteur=activé, etc.)",
+          "provider_filter_mode": "Filtre de fournisseurs Music Assistant",
           "provider_filter_list": "Fournisseurs Music Assistant à filtrer (ex. Tidal)",
           "all_players": "Scrobbler depuis TOUS les lecteurs (ignore la sélection ci-dessous)"
         },
-        "description": "Mettez à jour les informations d'identification conformément au README ou modifiez le comportement de ce scrobbler."
+        "description": "Modifiez le comportement de ce scrobbler. Votre connexion Last.fm reste inchangée."
       }
     }
   },
